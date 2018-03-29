@@ -39,6 +39,12 @@ func (s *SimpleAllocator) loadRingFromDB(tx *bolt.Tx) error {
 
 	for _, clusterId := range clusters {
 		cluster, err := NewClusterEntryFromId(tx, clusterId)
+	nodeUp := currentNodeHealthStatus()
+
+	ring := NewSimpleAllocatorRing()
+
+	for _, nodeId := range cluster.Info.Nodes {
+		node, err := NewNodeEntryFromId(tx, nodeId)
 		if err != nil {
 			return err
 		}
@@ -46,6 +52,11 @@ func (s *SimpleAllocator) loadRingFromDB(tx *bolt.Tx) error {
 		// Add Cluster to ring
 		if err = s.addCluster(cluster.Info.Id); err != nil {
 			return err
+		}
+		if up, found := nodeUp[nodeId]; found && !up {
+			// if the node is in the cache and we know it was not
+			// recently healthy, skip it
+			continue
 		}
 
 		for _, nodeId := range cluster.Info.Nodes {
