@@ -39,7 +39,7 @@ func TestCreateNodeHeathCache(t *testing.T) {
 	)
 	tests.Assert(t, err == nil, "expected err == nil, got:", err)
 
-	hc := NewNodeHealthCache(app.db, app.executor)
+	hc := NewNodeHealthCache(1, app.db, app.executor)
 	tests.Assert(t, hc != nil, "expected hc != nil, got:", hc)
 
 	nodeUp := hc.Status()
@@ -64,7 +64,7 @@ func TestNodeHeathCacheHealthy(t *testing.T) {
 	)
 	tests.Assert(t, err == nil, "expected err == nil, got:", err)
 
-	hc := NewNodeHealthCache(app.db, app.executor)
+	hc := NewNodeHealthCache(1, app.db, app.executor)
 	tests.Assert(t, hc != nil, "expected hc != nil, got:", hc)
 
 	err = hc.Refresh()
@@ -101,7 +101,7 @@ func TestNodeHeathCacheMonitor(t *testing.T) {
 		return nil
 	}
 
-	hc := NewNodeHealthCache(app.db, app.executor)
+	hc := NewNodeHealthCache(1, app.db, app.executor)
 	tests.Assert(t, hc != nil, "expected hc != nil, got:", hc)
 
 	hc.CheckInterval = time.Millisecond * 10
@@ -139,7 +139,7 @@ func TestNodeHeathCacheSomeUnhealthy(t *testing.T) {
 		cc++
 		return e
 	}
-	hc := NewNodeHealthCache(app.db, app.executor)
+	hc := NewNodeHealthCache(1, app.db, app.executor)
 	tests.Assert(t, hc != nil, "expected hc != nil, got:", hc)
 
 	err = hc.Refresh()
@@ -189,7 +189,7 @@ func TestNodeHeathCacheMultiRefresh(t *testing.T) {
 
 	for i := 0; i < 5; i++ {
 		cc = 0
-		hc := NewNodeHealthCache(app.db, app.executor)
+		hc := NewNodeHealthCache(1, app.db, app.executor)
 		tests.Assert(t, hc != nil, "expected hc != nil, got:", hc)
 
 		err = hc.Refresh()
@@ -249,7 +249,7 @@ func TestNodeHeathCacheSkipOffline(t *testing.T) {
 		cc++
 		return nil
 	}
-	hc := NewNodeHealthCache(app.db, app.executor)
+	hc := NewNodeHealthCache(1, app.db, app.executor)
 	tests.Assert(t, hc != nil, "expected hc != nil, got:", hc)
 
 	err = hc.Refresh()
@@ -287,7 +287,7 @@ func TestNodeHeathCacheExpireNodes(t *testing.T) {
 	currTime := time.Now()
 	healthNow = func() time.Time { return currTime }
 
-	hc := NewNodeHealthCache(app.db, app.executor)
+	hc := NewNodeHealthCache(1, app.db, app.executor)
 	tests.Assert(t, hc != nil, "expected hc != nil, got:", hc)
 	hc.Expiration = 1 * time.Hour
 
