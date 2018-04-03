@@ -61,6 +61,12 @@
       "Default is warning"
     ],
     "loglevel" : "debug",
+    "__refresh_time_monitor_gluster_nodes":"Refresh time in seconds to monitor Gluster node",
+    "refresh_time_monitor_gluster_nodes":120,
+    
+    "__start_time_monitor_gluster_nodes":"Start time in seconds to monitor Gluster node when the heketi comes up",
+    "start_time_monitor_gluster_nodes":1,
+
 
     "_auto_create_block_hosting_volume": "Creates Block Hosting volumes automatically if not found or exsisting volume exhausted",
     "auto_create_block_hosting_volume": true,
