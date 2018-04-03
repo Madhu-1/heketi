@@ -46,12 +46,12 @@ type NodeHealthCache struct {
 	stop chan<- interface{}
 }
 
-func NewNodeHealthCache(db wdb.RODB, e executors.Executor) *NodeHealthCache {
+func NewNodeHealthCache(reftime uint32, db wdb.RODB, e executors.Executor) *NodeHealthCache {
 	return &NodeHealthCache{
 		db:            db,
 		exec:          e,
 		nodes:         map[string](*NodeHealthStatus){},
-		CheckInterval: time.Minute * 2,
+		CheckInterval: time.Second * time.Duration(reftime),
 		Expiration:    time.Hour * 2,
 	}
 }

@@ -185,7 +185,7 @@ func NewApp(configIo io.Reader) *App {
 	}
 
 	if app.conf.MonitorGlusterNodes {
-		app.nhealth = NewNodeHealthCache(app.db, app.executor)
+		app.nhealth = NewNodeHealthCache(timer, app.db, app.executor)
 		app.nhealth.Monitor()
 		currentNodeHealthCache = app.nhealth
 	}
