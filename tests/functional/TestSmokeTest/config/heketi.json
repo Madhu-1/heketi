@@ -1,10 +1,15 @@
 {
 	"_port_comment": "Heketi Server Port Number",
 	"port" : "8080",
-
+        "use_http_throttle":true,
+	"max_http_throttle_count":10,
+	"http_throttle_req_cleanup_time":20,
+	"loglevel" : "error",
 	"_glusterfs_comment": "GlusterFS Configuration",
 	"glusterfs" : {
 
+	"loglevel" : "error",
+	"_glusterfs_comment": "GlusterFS Configuration",
 		"_executor_comment": "Execute plugin. Possible choices: mock, ssh",
 		"executor" : "ssh",
 

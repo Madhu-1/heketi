@@ -355,7 +355,6 @@ func main() {
 			os.Exit(1)
 		}
 
-		n.Use(&middleware.RequestID{})
 		// Add Token parser
 		n.Use(jwtauth)
 
@@ -364,8 +363,11 @@ func main() {
 
 		fmt.Println("Authorization loaded")
 	}
+	n.Use(&middleware.RequestID{})
 	//Load HTTP request Throttling Middleware
+	fmt.Println("enable throttling ", options.HTTPThrottleEnabled)
 	if options.HTTPThrottleEnabled {
+		fmt.Println("htpt throttling")
 		maxHTTPThrottleCount := options.MaxHTTPThrottleCount
 		if maxHTTPThrottleCount == 0 {
 			maxHTTPThrottleCount = 30

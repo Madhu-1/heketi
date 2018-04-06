@@ -9,6 +9,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"sync"
@@ -69,29 +70,40 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 	switch hr.Method {
 
 	case http.MethodPost, http.MethodDelete:
+		fmt.Println("##################serving  count", r.servingCount, hr.URL.Path, hr.Method)
+		fmt.Println("map data ", r.requestCache)
 		if !r.reachedMaxRequest() {
 
 			next(hw, hr)
 
 			res, ok := hw.(negroni.ResponseWriter)
 			if !ok {
+				fmt.Println("$$$$$$$$$$$$$$$$$$$ failed to type assertion")
 				return
 			}
 			//if request is accepted for Async operation
+			fmt.Println("************************ accepted status*****************", res.Status())
 			if res.Status() == http.StatusAccepted {
 
 				reqID := GetRequestID(hr.Context())
 				//Add request Id to in-memory
+				fmt.Println("************************ accepted request*****************", reqID)
 				if reqID != "" {
+
 					r.incRequest(reqID)
+					fmt.Println(r.requestCache)
+					fmt.Println("************************ done request*****************")
 				}
 
 			}
 		} else {
+			fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2 hey failed@@@@@@@@@@@@@@@@@@@")
 			http.Error(hw, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
 
 		}
 	case http.MethodGet:
+		fmt.Println("##################Request count", r.servingCount)
+		fmt.Println("####################map data ", r.requestCache)
 		next(hw, hr)
 
 		res, ok := hw.(negroni.ResponseWriter)
@@ -99,6 +111,7 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 			return
 		}
 		urlPart := strings.Split(hr.URL.Path, "/")
+		fmt.Println("###############request id from GET ", hr.URL.Path, len(urlPart))
 		if len(urlPart) >= 3 {
 			if isSuccess(res.Status()) || res.Status() == http.StatusInternalServerError {
 				//extract the reqID from URL
@@ -106,7 +119,9 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 
 				//check Request Id present in im-memeory
 				if _, ok := r.requestCache[reqID]; ok {
-
+					fmt.Println("************************ comepleted for request*****************")
+					fmt.Println(r.requestCache)
+					fmt.Println("************************ done request*****************")
 					//check operation is not pending
 					if hr.Header.Get("X-Pending") != "true" {
 						r.decRequest(reqID)
