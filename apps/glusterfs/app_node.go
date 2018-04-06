@@ -15,6 +15,7 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
+	"github.com/heketi/heketi/middleware"
 	"github.com/heketi/heketi/pkg/glusterfs/api"
 	"github.com/heketi/heketi/pkg/utils"
 )
@@ -112,7 +113,8 @@ func (a *App) NodeAdd(w http.ResponseWriter, r *http.Request) {
 
 	// Add node
 	logger.Info("Adding node %v", node.ManageHostName())
-	a.asyncManager.AsyncHttpRedirectFunc(w, r, func() (seeother string, e error) {
+	reqId := middleware.GetRequestID(r.Context())
+	a.asyncManager.AsyncHttpRedirectUsing(w, r, reqId, func() (seeother string, e error) {
 
 		// Cleanup in case of failure
 		defer func() {
@@ -277,7 +279,8 @@ func (a *App) NodeDelete(w http.ResponseWriter, r *http.Request) {
 
 	// Delete node asynchronously
 	logger.Info("Deleting node %v [%v]", node.ManageHostName(), node.Info.Id)
-	a.asyncManager.AsyncHttpRedirectFunc(w, r, func() (string, error) {
+	reqID := middleware.GetRequestID(r.Context())
+	a.asyncManager.AsyncHttpRedirectUsing(w, r, reqID, func() (string, error) {
 
 		// Remove from trusted pool
 		if peer_node != nil {
@@ -370,9 +373,9 @@ func (a *App) NodeSetState(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-
+	reqID := middleware.GetRequestID(r.Context())
 	// Set state
-	a.asyncManager.AsyncHttpRedirectFunc(w, r, func() (string, error) {
+	a.asyncManager.AsyncHttpRedirectUsing(w, r, reqID, func() (string, error) {
 		err = node.SetState(a.db, a.executor, msg.State)
 		if err != nil {
 			return "", err

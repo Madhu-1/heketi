@@ -14,6 +14,7 @@ import (
 	"net/http"
 
 	"github.com/heketi/heketi/executors"
+	"github.com/heketi/heketi/middleware"
 	wdb "github.com/heketi/heketi/pkg/db"
 
 	"github.com/boltdb/bolt"
@@ -940,8 +941,8 @@ func AsyncHttpOperation(app *App,
 		logger.LogError("%v Build Failed: %v", label, err)
 		return err
 	}
-
-	app.asyncManager.AsyncHttpRedirectFunc(w, r, func() (string, error) {
+	reqID := middleware.GetRequestID(r.Context())
+	app.asyncManager.AsyncHttpRedirectUsing(w, r, reqID, func() (string, error) {
 		logger.Info("Started async operation: %v", label)
 		if err := op.Exec(app.executor); err != nil {
 			if rerr := op.Rollback(app.executor); rerr != nil {

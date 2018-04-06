@@ -355,6 +355,7 @@ func main() {
 			os.Exit(1)
 		}
 
+		n.Use(&middleware.RequestID{})
 		// Add Token parser
 		n.Use(jwtauth)
 
