@@ -12,7 +12,6 @@
 package functional
 
 import (
-	"fmt"
 	"sync"
 	"testing"
 
@@ -40,12 +39,10 @@ func testReqTrottlingCreateVolume(t *testing.T) {
 	var wg sync.WaitGroup
 	count := 0
 	for i := 1; i < 30; i++ {
-		fmt.Println("counter value ", i)
 		go func(t *testing.T, wg *sync.WaitGroup, c *int) {
 			wg.Add(1)
 			defer wg.Done()
 			*c = *c + 1
-			fmt.Println("started count ", count)
 			_, err := heketi.VolumeCreate(volReq)
 			tests.Assert(t, err == nil, "expected err == nil, got:", err)
 
@@ -54,7 +51,7 @@ func testReqTrottlingCreateVolume(t *testing.T) {
 	for count < 29 {
 		continue
 	}
-	volinfo, err := heketi.VolumeCreate(volReq)
+	_, err = heketi.VolumeCreate(volReq)
 	tests.Assert(t, err != nil, "expected err != nil, got:", err)
 	go func() {
 		for {
@@ -62,7 +59,7 @@ func testReqTrottlingCreateVolume(t *testing.T) {
 			if len(vl.Volumes) == 0 {
 				continue
 			} else {
-				vol, err := heketi.VolumeCreate(volReq)
+				_, err := heketi.VolumeCreate(volReq)
 				tests.Assert(t, err == nil, "expected err == nil, got:", err)
 				return
 			}

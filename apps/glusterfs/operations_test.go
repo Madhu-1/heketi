@@ -17,6 +17,8 @@ import (
 	"github.com/heketi/tests"
 
 	"github.com/gorilla/mux"
+	"github.com/heketi/heketi/middleware"
+	"github.com/urfave/negroni"
 )
 
 func TestVolumeCreatePendingCreatedCleared(t *testing.T) {
@@ -2128,8 +2130,13 @@ func testAsyncHttpOperation(t *testing.T,
 		}
 	}).Methods("GET")
 
+	reqIDGen := middleware.RequestID{}
+	n := negroni.New()
+	n.Use(&reqIDGen)
+
+	n.UseHandler(router)
 	// Setup the server
-	ts := httptest.NewServer(router)
+	ts := httptest.NewServer(n)
 	defer ts.Close()
 
 	testFunc(t, ts.URL)
