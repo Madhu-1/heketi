@@ -1,25 +1,22 @@
 {
 	"_port_comment": "Heketi Server Port Number",
-	"port" : "8080",
-        "use_http_throttle":true,
-	"max_http_throttle_count":10,
-	"http_throttle_req_cleanup_time":20,
-	"loglevel" : "error",
+	"port": "8080",
+	"use_http_throttle": true,
+	"max_http_throttle_count": 30,
+	"http_throttle_req_cleanup_time": 20,
+	"loglevel": "error",
 	"_glusterfs_comment": "GlusterFS Configuration",
-	"glusterfs" : {
-
-	"loglevel" : "error",
-	"_glusterfs_comment": "GlusterFS Configuration",
+	"glusterfs": {
+		"loglevel": "error",
+		"_glusterfs_comment": "GlusterFS Configuration",
 		"_executor_comment": "Execute plugin. Possible choices: mock, ssh",
-		"executor" : "ssh",
-
+		"executor": "ssh",
 		"_db_comment": "Database file name",
-		"db" : "heketi.db",
-
-		"sshexec" : {
-			"keyfile" : "config/insecure_private_key",
-			"user" : "vagrant",
-			"sudo" : true
+		"db": "heketi.db",
+		"sshexec": {
+			"keyfile": "config/insecure_private_key",
+			"user": "vagrant",
+			"sudo": true
 		}
 	}
 }

@@ -26,6 +26,7 @@ var (
 type ReqLimiter struct {
 	maxcount     uint32
 	servingCount uint32
+	recvCount    uint32
 	//in memeory storage for ReqLimiter
 	requestCache map[string]time.Time
 	lock         sync.RWMutex
@@ -37,6 +38,13 @@ func (r *ReqLimiter) reachedMaxRequest() bool {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 	return r.servingCount >= r.maxcount
+}
+
+//Function to check can heketi can take more request
+func (r *ReqLimiter) receviedcount() bool {
+	r.lock.RLock()
+	defer r.lock.RUnlock()
+	return r.recvCount >= r.maxcount
 }
 
 //Function to add request id to the queue
@@ -56,6 +64,21 @@ func (r *ReqLimiter) decRequest(reqid string) {
 
 }
 
+//Function to add request id to the queue
+func (r *ReqLimiter) incRecvCount() {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+	r.recvCount++
+}
+
+//Function to remove request id to the queue
+func (r *ReqLimiter) decRecvCount() {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+	r.recvCount--
+
+}
+
 //NewHTTPThrottler Function to return the ReqLimiter
 func NewHTTPThrottler(count uint32) *ReqLimiter {
 	return &ReqLimiter{
@@ -70,9 +93,10 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 	switch hr.Method {
 
 	case http.MethodPost, http.MethodDelete:
-		fmt.Println("##################serving  count", r.servingCount, hr.URL.Path, hr.Method)
-		fmt.Println("map data ", r.requestCache)
-		if !r.reachedMaxRequest() {
+		fmt.Println("##################serving  count", r.recvCount, r.servingCount, hr.URL.Path, hr.Method)
+		r.incRecvCount()
+		fmt.Println("checking ", !r.reachedMaxRequest(), !r.receviedcount())
+		if !r.reachedMaxRequest() && !r.receviedcount() {
 
 			next(hw, hr)
 
@@ -92,15 +116,16 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 
 					r.incRequest(reqID)
 					fmt.Println(r.requestCache)
-					fmt.Println("************************ done request*****************")
+					fmt.Println("************************ done request*****************", r.requestCache)
 				}
 
 			}
 		} else {
-			fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2 hey failed@@@@@@@@@@@@@@@@@@@")
+			fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2 hey failed@@@@@@@@@@@@@@@@@@@", r.recvCount, r.servingCount, hr.URL.Path)
 			http.Error(hw, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
 
 		}
+		r.decRecvCount()
 	case http.MethodGet:
 		fmt.Println("##################Request count", r.servingCount)
 		fmt.Println("####################map data ", r.requestCache)
@@ -116,12 +141,12 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 			if isSuccess(res.Status()) || res.Status() == http.StatusInternalServerError {
 				//extract the reqID from URL
 				reqID := urlPart[2]
-
+				fmt.Println("##################database ", r.requestCache)
 				//check Request Id present in im-memeory
 				if _, ok := r.requestCache[reqID]; ok {
-					fmt.Println("************************ comepleted for request*****************")
+					fmt.Println("************************ completed for request*****************", reqID)
 					fmt.Println(r.requestCache)
-					fmt.Println("************************ done request*****************")
+					fmt.Println("************************ done request*****************", hr.Header.Get("X-Pending"))
 					//check operation is not pending
 					if hr.Header.Get("X-Pending") != "true" {
 						r.decRequest(reqID)
