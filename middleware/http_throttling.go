@@ -26,7 +26,8 @@ var (
 type ReqLimiter struct {
 	maxcount     uint32
 	servingCount uint32
-	recvCount    uint32
+	//counter for incoming request
+	reqRecvCount uint32
 	//in memeory storage for ReqLimiter
 	requestCache map[string]time.Time
 	lock         sync.RWMutex
@@ -40,11 +41,11 @@ func (r *ReqLimiter) reachedMaxRequest() bool {
 	return r.servingCount >= r.maxcount
 }
 
-//Function to check can heketi can take more request
-func (r *ReqLimiter) receviedcount() bool {
+//Function to check total received request
+func (r *ReqLimiter) reqReceivedcount() bool {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
-	return r.recvCount >= r.maxcount
+	return r.reqRecvCount >= r.maxcount
 }
 
 //Function to add request id to the queue
@@ -64,18 +65,18 @@ func (r *ReqLimiter) decRequest(reqid string) {
 
 }
 
-//Function to add request id to the queue
+//Function to increment recvRequestCount
 func (r *ReqLimiter) incRecvCount() {
 	r.lock.Lock()
 	defer r.lock.Unlock()
-	r.recvCount++
+	r.reqRecvCount++
 }
 
-//Function to remove request id to the queue
+//Function to decrement recvRequestCount
 func (r *ReqLimiter) decRecvCount() {
 	r.lock.Lock()
 	defer r.lock.Unlock()
-	r.recvCount--
+	r.reqRecvCount--
 
 }
 
@@ -93,10 +94,14 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 	switch hr.Method {
 
 	case http.MethodPost, http.MethodDelete:
-		fmt.Println("##################serving  count", r.recvCount, r.servingCount, hr.URL.Path, hr.Method)
+		fmt.Println("##################serving  count", r.reqRecvCount, r.servingCount, hr.URL.Path, hr.Method)
+		//recevied a request increment the counter
+		//this is required it will take time to get response for current request
+
 		r.incRecvCount()
-		fmt.Println("checking ", !r.reachedMaxRequest(), !r.receviedcount())
-		if !r.reachedMaxRequest() && !r.receviedcount() {
+		fmt.Println("checking ", !r.reachedMaxRequest(), !r.reqReceivedcount())
+		//by this we can avoid overload by checking maximum and currently received requests counts
+		if !r.reachedMaxRequest() && !r.reqReceivedcount() {
 
 			next(hw, hr)
 
