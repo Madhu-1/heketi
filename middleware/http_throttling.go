@@ -101,7 +101,7 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 
 		r.incRecvCount()
 		//by this we can avoid overload by checking maximum and currently received requests counts
-		logger.Info("madhu serving request and received request count", r.servingCount, r.reqRecvCount)
+		logger.Info("madhu serving request and received request count %v %v", r.servingCount, r.reqRecvCount)
 		if !r.reachedMaxRequest() && !r.reqReceivedcount() {
 
 			next(hw, hr)
@@ -111,7 +111,7 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 				return
 			}
 			//if request is accepted for Async operation
-			logger.Info("madhu request accepted status and id ", res.Status(), GetRequestID(hr.Context()))
+			logger.Info("madhu request accepted status and id %v %v", res.Status(), GetRequestID(hr.Context()))
 			if res.Status() == http.StatusAccepted {
 
 				reqID := GetRequestID(hr.Context())
