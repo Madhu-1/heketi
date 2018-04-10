@@ -18,7 +18,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/heketi/heketi/middleware"
-	"github.com/urfave/negroni"
 )
 
 func TestVolumeCreatePendingCreatedCleared(t *testing.T) {
@@ -2117,6 +2116,7 @@ func testAsyncHttpOperation(t *testing.T,
 
 	// Setup the route
 	router := mux.NewRouter()
+
 	router.HandleFunc("/queue/{id}", app.asyncManager.HandlerStatus).Methods("GET")
 	router.HandleFunc("/myresource", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=UTF-8")
@@ -2125,18 +2125,14 @@ func testAsyncHttpOperation(t *testing.T,
 	}).Methods("GET")
 
 	router.HandleFunc("/app", func(w http.ResponseWriter, r *http.Request) {
-		if x := AsyncHttpOperation(app, w, r, o); x != nil {
+		newCtx := middleware.AddRequestID(r)
+		if x := AsyncHttpOperation(app, w, r.WithContext(newCtx), o); x != nil {
 			http.Error(w, x.Error(), http.StatusInternalServerError)
 		}
 	}).Methods("GET")
 
-	reqIDGen := middleware.RequestID{}
-	n := negroni.New()
-	n.Use(&reqIDGen)
-
-	n.UseHandler(router)
 	// Setup the server
-	ts := httptest.NewServer(n)
+	ts := httptest.NewServer(router)
 	defer ts.Close()
 
 	testFunc(t, ts.URL)

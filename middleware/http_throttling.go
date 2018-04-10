@@ -130,7 +130,8 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 		if !ok {
 			return
 		}
-		urlPart := strings.Split(hr.URL.Path, "/")
+		path := strings.TrimRight(hr.URL.Path, "/")
+		urlPart := strings.Split(path, "/")
 		if len(urlPart) >= 3 {
 			if isSuccess(res.Status()) || res.Status() == http.StatusInternalServerError {
 				//extract the reqID from URL

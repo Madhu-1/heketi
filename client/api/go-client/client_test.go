@@ -37,12 +37,13 @@ func setupHeketiServer(app *glusterfs.App) *httptest.Server {
 	app.SetRoutes(router)
 	n := negroni.New()
 	reqIDGen := middleware.RequestID{}
-	n.Use(&reqIDGen)
+
 	jwtconfig := &middleware.JwtAuthConfig{}
 	jwtconfig.Admin.PrivateKey = TEST_ADMIN_KEY
 	jwtconfig.User.PrivateKey = "userkey"
 
 	// Setup middleware
+	n.Use(&reqIDGen)
 	n.Use(middleware.NewJwtAuth(jwtconfig))
 	n.UseFunc(app.Auth)
 	n.UseHandler(router)
