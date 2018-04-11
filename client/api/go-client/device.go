@@ -43,7 +43,7 @@ func (c *Client) DeviceAdd(request *api.DeviceAddRequest) error {
 	}
 
 	// Send request
-	r, err := c.do(req)
+	r, err := c.retryOperationDo(req)
 	if err != nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func (c *Client) DeviceDelete(id string) error {
 	}
 
 	// Send request
-	r, err := c.do(req)
+	r, err := c.retryOperationDo(req)
 	if err != nil {
 		return err
 	}
@@ -159,7 +159,7 @@ func (c *Client) DeviceState(id string,
 	}
 
 	// Get info
-	r, err := c.do(req)
+	r, err := c.retryOperationDo(req)
 	if err != nil {
 		return err
 	}
@@ -195,7 +195,7 @@ func (c *Client) DeviceResync(id string) error {
 	}
 
 	// Send request
-	r, err := c.do(req)
+	r, err := c.retryOperationDo(req)
 	if err != nil {
 		return err
 	}

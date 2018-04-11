@@ -47,7 +47,7 @@ func (c *Client) VolumeCreate(request *api.VolumeCreateRequest) (
 	}
 
 	// Send request
-	r, err := c.do(req)
+	r, err := c.retryOperationDo(req)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (c *Client) VolumeExpand(id string, request *api.VolumeExpandRequest) (
 	}
 
 	// Send request
-	r, err := c.do(req)
+	r, err := c.retryOperationDo(req)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +212,7 @@ func (c *Client) VolumeDelete(id string) error {
 	}
 
 	// Send request
-	r, err := c.do(req)
+	r, err := c.retryOperationDo(req)
 	if err != nil {
 		return err
 	}

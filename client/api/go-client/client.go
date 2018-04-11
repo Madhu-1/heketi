@@ -15,6 +15,9 @@ package client
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
+	"fmt"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -24,24 +27,35 @@ import (
 
 const (
 	MAX_CONCURRENT_REQUESTS = 32
+	retryCount              = 30
 )
 
 // Client object
 type Client struct {
-	host     string
-	key      string
-	user     string
-	throttle chan bool
+	host       string
+	key        string
+	user       string
+	throttle   chan bool
+	retryCount int
 }
 
-// Creates a new client to access a Heketi server
+//NewClient Creates a new client to access a Heketi server
 func NewClient(host, user, key string) *Client {
+	c := &Client{}
+
+	c = NewClientWithRetry(host, user, key, retryCount)
+	return c
+}
+
+//NewClientWithRetry Creates a new client to access a Heketi server with retrycount
+func NewClientWithRetry(host, user, key string, retryCount int) *Client {
 	c := &Client{}
 
 	c.key = key
 	c.host = host
 	c.user = user
-
+	//maximum retry for request
+	c.retryCount = retryCount
 	// Maximum concurrent requests
 	c.throttle = make(chan bool, MAX_CONCURRENT_REQUESTS)
 
@@ -174,4 +188,31 @@ func (c *Client) setToken(r *http.Request) error {
 	r.Header.Set("Authorization", "bearer "+signedtoken)
 
 	return nil
+}
+
+//RetryOperationDo for retry operation
+func (c *Client) retryOperationDo(req *http.Request) (*http.Response, error) {
+	// Send request
+	r1 := rand.New(rand.NewSource(time.Now().UnixNano()))
+	for i := 0; i < c.retryCount; i++ {
+		r, err := c.do(req)
+		defer r.Body.Close()
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println("status", r.StatusCode)
+		switch r.StatusCode {
+		case http.StatusTooManyRequests:
+
+			num := r1.Intn(10)
+			fmt.Println("not able to satisfy this request ", num)
+			time.Sleep(time.Duration(num))
+			continue
+
+		default:
+			return r, err
+
+		}
+	}
+	return nil, errors.New("Failed to complete requested operation")
 }
