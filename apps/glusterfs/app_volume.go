@@ -69,7 +69,12 @@ func (a *App) VolumeCreate(w http.ResponseWriter, r *http.Request) {
 		logger.LogError("Invalid volume size")
 		return
 	}
+
+	logger.Info("Request body %V", msg)
+
 	if msg.Snapshot.Enable {
+		logger.Info("snapshot %V", msg.Snapshot)
+		logger.Info("snapshot %v", msg.Snapshot)
 		if msg.Snapshot.Factor < 1 || msg.Snapshot.Factor > VOLUME_CREATE_MAX_SNAPSHOT_FACTOR {
 			http.Error(w, "Invalid snapshot factor", http.StatusBadRequest)
 			logger.LogError("Invalid snapshot factor")
