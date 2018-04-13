@@ -200,7 +200,7 @@ func (c *Client) retryOperationDo(req *http.Request) (*http.Response, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("status", r.StatusCode)
+		fmt.Println("status code", r.StatusCode)
 		switch r.StatusCode {
 		case http.StatusTooManyRequests:
 

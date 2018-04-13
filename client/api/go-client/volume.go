@@ -15,6 +15,7 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -55,7 +56,7 @@ func (c *Client) VolumeCreate(request *api.VolumeCreateRequest) (
 	if r.StatusCode != http.StatusAccepted {
 		return nil, utils.GetErrorFromResponse(r)
 	}
-
+	fmt.Println("creation complete going to check resp")
 	// Wait for response
 	r, err = c.waitForResponseWithTimer(r, time.Second)
 	if err != nil {
