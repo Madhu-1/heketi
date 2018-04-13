@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	MAX_CONCURRENT_REQUESTS = 32
+	MAX_CONCURRENT_REQUESTS = 1000
 	retryCount              = 1000
 )
 
@@ -196,16 +196,17 @@ func (c *Client) retryOperationDo(req *http.Request) (*http.Response, error) {
 	r1 := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for i := 0; i < c.retryCount; i++ {
 		r, err := c.do(req)
-		defer r.Body.Close()
 		if err != nil {
+			fmt.Println("the error during the request ", err)
 			return nil, err
 		}
+		defer r.Body.Close()
 		fmt.Println("status code", r.StatusCode)
 		switch r.StatusCode {
 		case http.StatusTooManyRequests:
 
-			num := r1.Intn(10)
-			fmt.Println("not able to satisfy this request ", num)
+			num := r1.Intn(30)
+			fmt.Println("not able to satisfy this request retry in", num)
 			time.Sleep(time.Duration(num))
 			continue
 

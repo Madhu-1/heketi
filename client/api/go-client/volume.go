@@ -49,6 +49,7 @@ func (c *Client) VolumeCreate(request *api.VolumeCreateRequest) (
 
 	// Send request
 	r, err := c.retryOperationDo(req)
+	fmt.Println("error in retry ", err)
 	if err != nil {
 		return nil, err
 	}
@@ -59,9 +60,11 @@ func (c *Client) VolumeCreate(request *api.VolumeCreateRequest) (
 	fmt.Println("creation complete going to check resp")
 	// Wait for response
 	r, err = c.waitForResponseWithTimer(r, time.Second)
+	fmt.Println("error ", err)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("response comapleted ", r.StatusCode)
 	if r.StatusCode != http.StatusOK {
 		return nil, utils.GetErrorFromResponse(r)
 	}

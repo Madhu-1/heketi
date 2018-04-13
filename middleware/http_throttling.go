@@ -38,15 +38,15 @@ type ReqLimiter struct {
 
 //Function to check can heketi can take more request
 func (r *ReqLimiter) reachedMaxRequest() bool {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
+	r.lock.Lock()
+	defer r.lock.Unlock()
 	return r.servingCount >= r.maxcount
 }
 
 //Function to check total received request
 func (r *ReqLimiter) reqReceivedcount() bool {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
+	r.lock.Lock()
+	defer r.lock.Unlock()
 	return r.reqRecvCount >= r.maxcount
 }
 
