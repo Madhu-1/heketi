@@ -127,6 +127,7 @@ func TestServeHTTPTrottle(t *testing.T) {
 			resp, _ := client.Do(r)
 			uid = resp.Header.Get("X-Request-ID")
 			http.Get(ts.URL + "/volume/" + uid)
+
 		}
 
 	}(20)

@@ -82,8 +82,14 @@ func (r *ReqLimiter) decRecvCount() {
 
 }
 
+var tr *ReqLimiter
+
 //NewHTTPThrottler Function to return the ReqLimiter
 func NewHTTPThrottler(count uint32) *ReqLimiter {
+	tr = &ReqLimiter{
+		maxcount:     count,
+		requestCache: make(map[string]time.Time),
+	}
 	return &ReqLimiter{
 		maxcount:     count,
 		requestCache: make(map[string]time.Time),
@@ -99,10 +105,10 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 		//recevied a request increment the counter
 		//this is required it will take time to get response for current request
 
-		r.incRecvCount()
+		tr.incRecvCount()
 		//by this we can avoid overload by checking maximum and currently received requests counts
-		logger.Info("madhu serving request and received request count %v %v", r.servingCount, r.reqRecvCount)
-		if !r.reachedMaxRequest() && !r.reqReceivedcount() {
+		logger.Info("madhu serving request and received request count %v %v", tr.servingCount, tr.reqRecvCount)
+		if !tr.reachedMaxRequest() && !tr.reqReceivedcount() {
 
 			next(hw, hr)
 
@@ -118,17 +124,17 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 				//Add request Id to in-memory
 				if reqID != "" {
 
-					r.incRequest(reqID)
-					logger.Info(fmt.Sprintf("serving request count %v", r.servingCount))
+					tr.incRequest(reqID)
+					logger.Info(fmt.Sprintf("serving request count %v", tr.servingCount))
 				}
 
 			}
 		} else {
-			logger.LogError(fmt.Sprintf("Rejected the request for URL max count reached recvcount %v serving count %v", r.reqRecvCount, r.servingCount))
+			logger.LogError(fmt.Sprintf("Rejected the request for URL max count reached recvcount %v serving count %v", tr.reqRecvCount, tr.servingCount))
 			http.Error(hw, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
 
 		}
-		r.decRecvCount()
+		tr.decRecvCount()
 	case http.MethodGet:
 
 		next(hw, hr)
@@ -144,12 +150,12 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 				//extract the reqID from URL
 				reqID := urlPart[2]
 				//check Request Id present in im-memeory
-				if _, ok := r.requestCache[reqID]; ok {
+				if _, ok := tr.requestCache[reqID]; ok {
 					//check operation is not pending
 					if hr.Header.Get("X-Pending") != "true" {
 
-						r.decRequest(reqID)
-						logger.Info("madhu completed for", reqID, r.servingCount)
+						tr.decRequest(reqID)
+						logger.Info("madhu completed for", reqID, tr.servingCount)
 					}
 
 				}
@@ -166,7 +172,7 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 func (r *ReqLimiter) Cleanup(ct time.Duration) {
 	t := time.NewTicker(ct)
 	stop := make(chan interface{})
-	r.stop = stop
+	tr.stop = stop
 
 	defer t.Stop()
 	for {
@@ -175,23 +181,23 @@ func (r *ReqLimiter) Cleanup(ct time.Duration) {
 			return
 
 		case <-t.C:
-			r.lock.Lock()
-			for reqID, value := range r.requestCache {
+			tr.lock.Lock()
+			for reqID, value := range tr.requestCache {
 
 				//using time.Now() which is helps for testing
 				if time.Now().Sub(value) > ct {
-					delete(r.requestCache, reqID)
-					r.servingCount--
+					delete(tr.requestCache, reqID)
+					tr.servingCount--
 				}
 			}
-			r.lock.Unlock()
+			tr.lock.Unlock()
 		}
 	}
 }
 
 //Stop Cleanup
 func (r *ReqLimiter) Stop() {
-	r.stop <- true
+	tr.stop <- true
 }
 
 // To check success status code
