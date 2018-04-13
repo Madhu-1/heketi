@@ -27,7 +27,7 @@ import (
 
 const (
 	MAX_CONCURRENT_REQUESTS = 32
-	retryCount              = 30
+	retryCount              = 1000
 )
 
 // Client object
