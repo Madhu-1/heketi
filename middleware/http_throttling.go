@@ -38,15 +38,15 @@ type ReqLimiter struct {
 
 //Function to check can heketi can take more request
 func (r *ReqLimiter) reachedMaxRequest() bool {
-	r.lock.Lock()
-	defer r.lock.Unlock()
+	r.lock.RLock()
+	defer r.lock.RUnlock()
 	return r.servingCount >= r.maxcount
 }
 
 //Function to check total received request
 func (r *ReqLimiter) reqReceivedcount() bool {
-	r.lock.Lock()
-	defer r.lock.Unlock()
+	r.lock.RLock()
+	defer r.lock.RUnlock()
 	return r.reqRecvCount >= r.maxcount
 }
 
@@ -82,14 +82,8 @@ func (r *ReqLimiter) decRecvCount() {
 
 }
 
-var tr *ReqLimiter
-
 //NewHTTPThrottler Function to return the ReqLimiter
 func NewHTTPThrottler(count uint32) *ReqLimiter {
-	tr = &ReqLimiter{
-		maxcount:     count,
-		requestCache: make(map[string]time.Time),
-	}
 	return &ReqLimiter{
 		maxcount:     count,
 		requestCache: make(map[string]time.Time),
@@ -105,10 +99,10 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 		//recevied a request increment the counter
 		//this is required it will take time to get response for current request
 
-		tr.incRecvCount()
+		r.incRecvCount()
 		//by this we can avoid overload by checking maximum and currently received requests counts
-		logger.Info("madhu serving request and received request count %v %v", tr.servingCount, tr.reqRecvCount)
-		if !tr.reachedMaxRequest() && !tr.reqReceivedcount() {
+		logger.Info("madhu serving request and received request count %v %v", r.servingCount, r.reqRecvCount)
+		if !r.reachedMaxRequest() && !r.reqReceivedcount() {
 
 			next(hw, hr)
 
@@ -124,17 +118,17 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 				//Add request Id to in-memory
 				if reqID != "" {
 
-					tr.incRequest(reqID)
-					logger.Info(fmt.Sprintf("serving request count %v", tr.servingCount))
+					r.incRequest(reqID)
+					logger.Info(fmt.Sprintf("serving request count %v", r.servingCount))
 				}
 
 			}
 		} else {
-			logger.LogError(fmt.Sprintf("Rejected the request for URL max count reached recvcount %v serving count %v", tr.reqRecvCount, tr.servingCount))
+			logger.LogError(fmt.Sprintf("Rejected the request for URL max count reached recvcount %v serving count %v", r.reqRecvCount, r.servingCount))
 			http.Error(hw, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
 
 		}
-		tr.decRecvCount()
+		r.decRecvCount()
 	case http.MethodGet:
 
 		next(hw, hr)
@@ -150,12 +144,12 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 				//extract the reqID from URL
 				reqID := urlPart[2]
 				//check Request Id present in im-memeory
-				if _, ok := tr.requestCache[reqID]; ok {
+				if _, ok := r.requestCache[reqID]; ok {
 					//check operation is not pending
-					if hr.Header.Get("X-Pending") != "true" {
+					if hw.Header().Get("X-Pending") != "true" {
 
-						tr.decRequest(reqID)
-						logger.Info("madhu completed for", reqID, tr.servingCount)
+						r.decRequest(reqID)
+						logger.Info("madhu completed for", reqID, r.servingCount)
 					}
 
 				}
@@ -172,7 +166,7 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 func (r *ReqLimiter) Cleanup(ct time.Duration) {
 	t := time.NewTicker(ct)
 	stop := make(chan interface{})
-	tr.stop = stop
+	r.stop = stop
 
 	defer t.Stop()
 	for {
@@ -181,23 +175,23 @@ func (r *ReqLimiter) Cleanup(ct time.Duration) {
 			return
 
 		case <-t.C:
-			tr.lock.Lock()
-			for reqID, value := range tr.requestCache {
+			r.lock.Lock()
+			for reqID, value := range r.requestCache {
 
 				//using time.Now() which is helps for testing
 				if time.Now().Sub(value) > ct {
-					delete(tr.requestCache, reqID)
-					tr.servingCount--
+					delete(r.requestCache, reqID)
+					r.servingCount--
 				}
 			}
-			tr.lock.Unlock()
+			r.lock.Unlock()
 		}
 	}
 }
 
 //Stop Cleanup
 func (r *ReqLimiter) Stop() {
-	tr.stop <- true
+	r.stop <- true
 }
 
 // To check success status code

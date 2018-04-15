@@ -41,10 +41,7 @@ type Client struct {
 
 //NewClient Creates a new client to access a Heketi server
 func NewClient(host, user, key string) *Client {
-	c := &Client{}
-
-	c = NewClientWithRetry(host, user, key, retryCount)
-	return c
+	return NewClientWithRetry(host, user, key, retryCount)
 }
 
 //NewClientWithRetry Creates a new client to access a Heketi server with retrycount

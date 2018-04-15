@@ -64,7 +64,7 @@ func (c *Client) VolumeCreate(request *api.VolumeCreateRequest) (
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("response comapleted ", r.StatusCode)
+	fmt.Println("response completed ", r.StatusCode)
 	if r.StatusCode != http.StatusOK {
 		return nil, utils.GetErrorFromResponse(r)
 	}
