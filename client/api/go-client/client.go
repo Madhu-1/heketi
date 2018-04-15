@@ -13,10 +13,12 @@
 package client
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"time"
@@ -188,10 +190,11 @@ func (c *Client) setToken(r *http.Request) error {
 }
 
 //RetryOperationDo for retry operation
-func (c *Client) retryOperationDo(req *http.Request) (*http.Response, error) {
+func (c *Client) retryOperationDo(req *http.Request, requestBody []byte) (*http.Response, error) {
 	// Send request
 	r1 := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for i := 0; i < c.retryCount; i++ {
+		req.Body = ioutil.NopCloser(bytes.NewBuffer(requestBody))
 		r, err := c.do(req)
 		if err != nil {
 			fmt.Println("the error during the request ", err)

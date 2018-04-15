@@ -48,7 +48,7 @@ func (c *Client) VolumeCreate(request *api.VolumeCreateRequest) (
 	}
 
 	// Send request
-	r, err := c.retryOperationDo(req)
+	r, err := c.retryOperationDo(req, buffer)
 	fmt.Println("error in retry ", err)
 	if err != nil {
 		return nil, err
@@ -104,7 +104,7 @@ func (c *Client) VolumeExpand(id string, request *api.VolumeExpandRequest) (
 	}
 
 	// Send request
-	r, err := c.retryOperationDo(req)
+	r, err := c.retryOperationDo(req, buffer)
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +216,7 @@ func (c *Client) VolumeDelete(id string) error {
 	}
 
 	// Send request
-	r, err := c.retryOperationDo(req)
+	r, err := c.retryOperationDo(req, nil)
 	if err != nil {
 		return err
 	}

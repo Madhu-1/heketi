@@ -44,7 +44,7 @@ func (c *Client) NodeAdd(request *api.NodeAddRequest) (*api.NodeInfoResponse, er
 	}
 
 	// Send request
-	r, err := c.retryOperationDo(req)
+	r, err := c.retryOperationDo(req, buffer)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (c *Client) NodeDelete(id string) error {
 	}
 
 	// Send request
-	r, err := c.retryOperationDo(req)
+	r, err := c.retryOperationDo(req, nil)
 	if err != nil {
 		return err
 	}
@@ -165,7 +165,7 @@ func (c *Client) NodeState(id string, request *api.StateRequest) error {
 	}
 
 	// Get info
-	r, err := c.retryOperationDo(req)
+	r, err := c.retryOperationDo(req, buffer)
 	if err != nil {
 		return err
 	}
