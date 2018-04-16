@@ -59,12 +59,13 @@ func (r *ReqLimiter) incRequest(reqid string) {
 }
 
 //Function to remove request id to the queue
-func (r *ReqLimiter) decRequest(reqid string) {
+func (r *ReqLimiter) decRequest(reqID string) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
-	delete(r.requestCache, reqid)
-	r.servingCount--
-
+	if _, ok := r.requestCache[reqID]; ok {
+		delete(r.requestCache, reqID)
+		r.servingCount--
+	}
 }
 
 //Function to increment recvRequestCount
@@ -134,11 +135,14 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 		next(hw, hr)
 
 		res, ok := hw.(negroni.ResponseWriter)
-		logger.Info("madhu recevied response for get %v", res)
-		logger.Info("madhu header check %v", hw.Header().Get("X-Pending"))
+
 		if !ok {
 			return
 		}
+		logger.Info("madhu recevied response for get %v", res)
+		logger.Info("madhu header check %v", hw.Header().Get("X-Pending"))
+		logger.Info("madhu header check %v", hw.Header().Get("X-Pending"))
+
 		path := strings.TrimRight(hr.URL.Path, "/")
 		urlPart := strings.Split(path, "/")
 		if len(urlPart) >= 3 {
@@ -150,7 +154,8 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 					//check operation is not pending
 					logger.Info("madhu going to delete %v", reqID)
 					if hw.Header().Get("X-Pending") != "true" {
-
+						logger.Info("going to delete ", r.requestCache)
+						logger.Info("serving count ", r.servingCount)
 						r.decRequest(reqID)
 						logger.Info("madhu completed for", reqID, r.servingCount)
 					}
