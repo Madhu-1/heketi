@@ -192,7 +192,6 @@ func (c *Client) setToken(r *http.Request) error {
 //RetryOperationDo for retry operation
 func (c *Client) retryOperationDo(req *http.Request, requestBody []byte) (*http.Response, error) {
 	// Send request
-	r1 := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for i := 0; i < c.retryCount; i++ {
 		req.Body = ioutil.NopCloser(bytes.NewBuffer(requestBody))
 		r, err := c.do(req)
@@ -205,7 +204,7 @@ func (c *Client) retryOperationDo(req *http.Request, requestBody []byte) (*http.
 		switch r.StatusCode {
 		case http.StatusTooManyRequests:
 
-			num := r1.Intn(30)
+			num := random(10, 30)
 			fmt.Println("not able to satisfy this request retry in", num)
 			time.Sleep(time.Duration(num))
 			continue
@@ -216,4 +215,9 @@ func (c *Client) retryOperationDo(req *http.Request, requestBody []byte) (*http.
 		}
 	}
 	return nil, errors.New("Failed to complete requested operation")
+}
+
+func random(min, max int) int {
+	rand.Seed(time.Now().Unix())
+	return rand.Intn(max-min) + min
 }
