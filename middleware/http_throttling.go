@@ -134,6 +134,8 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 		next(hw, hr)
 
 		res, ok := hw.(negroni.ResponseWriter)
+		logger.Info("madhu recevied response for get %v", res)
+		logger.Info("madhu header check %v", hw.Header().Get("X-Pending"))
 		if !ok {
 			return
 		}
@@ -146,6 +148,7 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 				//check Request Id present in im-memeory
 				if _, ok := r.requestCache[reqID]; ok {
 					//check operation is not pending
+					logger.Info("madhu going to delete %v", reqID)
 					if hw.Header().Get("X-Pending") != "true" {
 
 						r.decRequest(reqID)

@@ -206,7 +206,7 @@ func (c *Client) retryOperationDo(req *http.Request, requestBody []byte) (*http.
 
 			num := random(10, 30)
 			fmt.Println("not able to satisfy this request retry in", num)
-			time.Sleep(time.Duration(num))
+			time.Sleep(time.Second * time.Duration(num))
 			continue
 
 		default:
@@ -214,10 +214,10 @@ func (c *Client) retryOperationDo(req *http.Request, requestBody []byte) (*http.
 
 		}
 	}
+	fmt.Println("Failed to complete requested operation ")
 	return nil, errors.New("Failed to complete requested operation")
 }
 
 func random(min, max int) int {
-	rand.Seed(time.Now().Unix())
 	return rand.Intn(max-min) + min
 }
