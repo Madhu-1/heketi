@@ -16,6 +16,7 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
+	"github.com/heketi/heketi/middleware"
 	"github.com/heketi/heketi/pkg/glusterfs/api"
 	"github.com/heketi/heketi/pkg/utils"
 )
@@ -73,8 +74,9 @@ func (a *App) BlockVolumeCreate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-
-	blockVolume := NewBlockVolumeEntryFromRequest(&msg)
+	//request id from middleware
+	reqID := middleware.GetRequestID(r.Context())
+	blockVolume := NewBlockVolumeEntryFromRequest(&msg, reqID)
 
 	bvc := NewBlockVolumeCreateOperation(blockVolume, a.db)
 	if err := AsyncHttpOperation(a, w, r, bvc); err != nil {

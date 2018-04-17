@@ -15,7 +15,6 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -49,7 +48,6 @@ func (c *Client) VolumeCreate(request *api.VolumeCreateRequest) (
 
 	// Send request
 	r, err := c.retryOperationDo(req, buffer)
-	fmt.Println("error in retry ", err)
 	if err != nil {
 		return nil, err
 	}
@@ -57,14 +55,11 @@ func (c *Client) VolumeCreate(request *api.VolumeCreateRequest) (
 	if r.StatusCode != http.StatusAccepted {
 		return nil, utils.GetErrorFromResponse(r)
 	}
-	fmt.Println("creation complete going to check resp")
 	// Wait for response
 	r, err = c.waitForResponseWithTimer(r, time.Second)
-	fmt.Println("error ", err)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("response completed ", r.StatusCode)
 	if r.StatusCode != http.StatusOK {
 		return nil, utils.GetErrorFromResponse(r)
 	}
@@ -102,7 +97,6 @@ func (c *Client) VolumeExpand(id string, request *api.VolumeExpandRequest) (
 	if err != nil {
 		return nil, err
 	}
-
 	// Send request
 	r, err := c.retryOperationDo(req, buffer)
 	if err != nil {
@@ -214,7 +208,6 @@ func (c *Client) VolumeDelete(id string) error {
 	if err != nil {
 		return err
 	}
-
 	// Send request
 	r, err := c.retryOperationDo(req, nil)
 	if err != nil {

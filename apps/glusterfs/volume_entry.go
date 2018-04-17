@@ -74,12 +74,12 @@ func NewVolumeEntry() *VolumeEntry {
 	return entry
 }
 
-func NewVolumeEntryFromRequest(req *api.VolumeCreateRequest) *VolumeEntry {
+func NewVolumeEntryFromRequest(req *api.VolumeCreateRequest, id string) *VolumeEntry {
 	godbc.Require(req != nil)
 
 	vol := NewVolumeEntry()
 	vol.Info.Gid = req.Gid
-	vol.Info.Id = utils.GenUUID()
+	vol.Info.Id = id
 	vol.Info.Durability = req.Durability
 	vol.Info.Snapshot = req.Snapshot
 	vol.Info.Size = req.Size

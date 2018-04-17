@@ -15,6 +15,7 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
+	"github.com/heketi/heketi/middleware"
 	"github.com/heketi/heketi/pkg/glusterfs/api"
 	"github.com/heketi/heketi/pkg/utils"
 )
@@ -28,8 +29,10 @@ func (a *App) ClusterCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//request id from middleware
+	reqID := middleware.GetRequestID(r.Context())
 	// Create a new ClusterInfo
-	entry := NewClusterEntryFromRequest(&msg)
+	entry := NewClusterEntryFromRequest(&msg, reqID)
 
 	// Add cluster to db
 	err = a.db.Update(func(tx *bolt.Tx) error {

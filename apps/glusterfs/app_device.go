@@ -41,9 +41,10 @@ func (a *App) DeviceAdd(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "no devices added", http.StatusBadRequest)
 		return
 	}
-
+	//request id from middleware
+	reqID := middleware.GetRequestID(r.Context())
 	// Create device entry
-	device := NewDeviceEntryFromRequest(&msg)
+	device := NewDeviceEntryFromRequest(&msg, reqID)
 
 	// Check the node is in the db
 	var node *NodeEntry

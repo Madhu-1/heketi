@@ -17,6 +17,7 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
+	"github.com/heketi/heketi/middleware"
 	"github.com/heketi/heketi/pkg/db"
 	"github.com/heketi/heketi/pkg/glusterfs/api"
 	"github.com/heketi/heketi/pkg/utils"
@@ -70,11 +71,7 @@ func (a *App) VolumeCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info("Request body %V", msg)
-
 	if msg.Snapshot.Enable {
-		logger.Info("snapshot %V", msg.Snapshot)
-		logger.Info("snapshot %v", msg.Snapshot)
 		if msg.Snapshot.Factor < 1 || msg.Snapshot.Factor > VOLUME_CREATE_MAX_SNAPSHOT_FACTOR {
 			http.Error(w, "Invalid snapshot factor", http.StatusBadRequest)
 			logger.LogError("Invalid snapshot factor")
@@ -137,8 +134,8 @@ func (a *App) VolumeCreate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-
-	vol := NewVolumeEntryFromRequest(&msg)
+	reqID := middleware.GetRequestID(r.Context())
+	vol := NewVolumeEntryFromRequest(&msg, reqID)
 
 	if uint64(msg.Size)*GB < vol.Durability.MinVolumeSize() {
 		http.Error(w, fmt.Sprintf("Requested volume size (%v GB) is "+

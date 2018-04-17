@@ -130,7 +130,7 @@ func setupCluster(t *testing.T, numNodes int, numDisks int) {
 		sg := utils.NewStatusGroup()
 		for _, disk := range disks[:numDisks] {
 			sg.Add(1)
-			go func(d string) {
+			go func(d string, sg *utils.StatusGroup) {
 				defer sg.Done()
 
 				driveReq := &api.DeviceAddRequest{}
@@ -139,7 +139,7 @@ func setupCluster(t *testing.T, numNodes int, numDisks int) {
 
 				err := heketi.DeviceAdd(driveReq)
 				sg.Err(err)
-			}(disk)
+			}(disk, sg)
 		}
 
 		err = sg.Result()
@@ -160,8 +160,8 @@ func teardownCluster(t *testing.T) {
 		for _, volume := range clusterInfo.Volumes {
 			err := heketi.VolumeDelete(volume)
 			tests.Assert(t, err == nil, "expected err == nil, got:", err)
-		}
 
+		}
 		// Delete nodes
 		for _, node := range clusterInfo.Nodes {
 
@@ -190,7 +190,6 @@ func teardownCluster(t *testing.T) {
 						sg.Err(err)
 						return
 					}
-
 					err = heketi.DeviceDelete(id)
 					sg.Err(err)
 

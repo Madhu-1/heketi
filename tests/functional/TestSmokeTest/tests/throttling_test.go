@@ -12,17 +12,18 @@
 package functional
 
 import (
-	"sync"
 	"testing"
 
 	"github.com/heketi/heketi/pkg/glusterfs/api"
+	"github.com/heketi/heketi/pkg/utils"
 	"github.com/heketi/tests"
 )
 
 func TestReqTrottling(t *testing.T) {
 	setupCluster(t, 4, 8)
-	defer teardownCluster(t)
+
 	t.Run("testReqTrottlingCreateVolume", testReqTrottlingCreateVolume)
+	defer teardownCluster(t)
 
 }
 
@@ -33,42 +34,52 @@ func testReqTrottlingCreateVolume(t *testing.T) {
 		"expected len(vl.Volumes) == 0, got:", len(vl.Volumes))
 
 	volReq := &api.VolumeCreateRequest{}
-	volReq.Size = 10
+	volReq.Size = 1
 	volReq.Durability.Type = api.DurabilityReplicate
 	volReq.Durability.Replicate.Replica = 3
-	var wg sync.WaitGroup
-	count := 0
-	for i := 1; i < 30; i++ {
-		go func(t *testing.T, wg *sync.WaitGroup, c *int) {
-			wg.Add(1)
+	wg := utils.NewStatusGroup()
+	for i := 0; i < 100; i++ {
+		wg.Add(1)
+		go func(t *testing.T, wg *utils.StatusGroup) {
 			defer wg.Done()
-			*c = *c + 1
 			_, err := heketi.VolumeCreate(volReq)
-			tests.Assert(t, err == nil, "expected err == nil, got:", err)
+			wg.Err(err)
 
-		}(t, &wg, &count)
+		}(t, wg)
 	}
-	for count < 29 {
-		continue
-	}
-	_, err = heketi.VolumeCreate(volReq)
-	tests.Assert(t, err != nil, "expected err != nil, got:", err)
-	go func() {
-		for {
-			vl, err = heketi.VolumeList()
-			if len(vl.Volumes) == 0 {
-				continue
-			} else {
-				_, err := heketi.VolumeCreate(volReq)
-				tests.Assert(t, err == nil, "expected err == nil, got:", err)
-				return
-			}
 
-		}
-	}()
-	wg.Wait()
+	err = wg.Result()
+	tests.Assert(t, err == nil, "expected err == nil, got:", err)
 	vl, err = heketi.VolumeList()
 	tests.Assert(t, err == nil, "expected err == nil, got:", err)
-	tests.Assert(t, len(vl.Volumes) == 30,
-		"expected len(vl.Volumes) == 30, got:", len(vl.Volumes))
+	tests.Assert(t, len(vl.Volumes) == 100,
+		"expected len(vl.Volumes) == 100, got:", len(vl.Volumes))
+
+	throttlingteardownVolumes(t)
+}
+
+func throttlingteardownVolumes(t *testing.T) {
+	PauseBeforeTeardown()
+	clusters, err := heketi.ClusterList()
+	tests.Assert(t, err == nil, err)
+	sg := utils.NewStatusGroup()
+	for _, cluster := range clusters.Clusters {
+		clusterInfo, err := heketi.ClusterInfo(cluster)
+		tests.Assert(t, err == nil, "expected err == nil, got:", err)
+		for _, volume := range clusterInfo.Volumes {
+			sg.Add(1)
+			go func(t *testing.T, sg *utils.StatusGroup, volume string) {
+
+				defer sg.Done()
+				err := heketi.VolumeDelete(volume)
+				sg.Err(err)
+			}(t, sg, volume)
+		}
+	}
+	err = sg.Result()
+	tests.Assert(t, err == nil, "expected err == nil, got:", err)
+	vl, err := heketi.VolumeList()
+	tests.Assert(t, err == nil, "expected err == nil, got:", err)
+	tests.Assert(t, len(vl.Volumes) == 0,
+		"expected len(vl.Volumes) == 0, got:", len(vl.Volumes))
 }

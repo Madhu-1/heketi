@@ -2,8 +2,8 @@
 	"_port_comment": "Heketi Server Port Number",
 	"port": "8080",
 	"use_http_throttle": true,
-	"max_http_throttle_count": 30,
-	"http_throttle_req_cleanup_time": 20,
+	"max_http_throttle_count": 25,
+	"http_throttle_req_cleanup_time": 60,
 	"loglevel": "error",
 	"_glusterfs_comment": "GlusterFS Configuration",
 	"glusterfs": {

@@ -82,6 +82,13 @@ func (r *ReqLimiter) decRecvCount() {
 	r.reqRecvCount--
 
 }
+func (r *ReqLimiter) checkReqIDPresent(reqID string) bool {
+	r.lock.RLock()
+	defer r.lock.RUnlock()
+	_, ok := r.requestCache[reqID]
+	return ok
+
+}
 
 //NewHTTPThrottler Function to return the ReqLimiter
 func NewHTTPThrottler(count uint32) *ReqLimiter {
@@ -102,7 +109,6 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 
 		r.incRecvCount()
 		//by this we can avoid overload by checking maximum and currently received requests counts
-		logger.Info("madhu serving request and received request count %v %v", r.servingCount, r.reqRecvCount)
 		if !r.reachedMaxRequest() && !r.reqReceivedcount() {
 
 			next(hw, hr)
@@ -112,7 +118,6 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 				return
 			}
 			//if request is accepted for Async operation
-			logger.Info("madhu request accepted status and id %v %v", res.Status(), GetRequestID(hr.Context()))
 			if res.Status() == http.StatusAccepted {
 
 				reqID := GetRequestID(hr.Context())
@@ -120,12 +125,11 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 				if reqID != "" {
 
 					r.incRequest(reqID)
-					logger.Info(fmt.Sprintf("serving request count %v", r.servingCount))
 				}
 
 			}
 		} else {
-			logger.LogError(fmt.Sprintf("Rejected the request for URL max count reached recvcount %v serving count %v", r.reqRecvCount, r.servingCount))
+			logger.LogError(fmt.Sprintf("Rejected the request as max count reached "))
 			http.Error(hw, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
 
 		}
@@ -139,25 +143,18 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 		if !ok {
 			return
 		}
-		logger.Info("madhu recevied response for get %v", res)
-		logger.Info("madhu header check %v", hw.Header().Get("X-Pending"))
-		logger.Info("madhu header check %v", hw.Header().Get("X-Pending"))
-
 		path := strings.TrimRight(hr.URL.Path, "/")
 		urlPart := strings.Split(path, "/")
 		if len(urlPart) >= 3 {
 			if isSuccess(res.Status()) || res.Status() == http.StatusInternalServerError {
 				//extract the reqID from URL
 				reqID := urlPart[2]
-				//check Request Id present in im-memeory
-				if _, ok := r.requestCache[reqID]; ok {
+
+				//check Request Id present in in-memeory
+				if r.checkReqIDPresent(reqID) {
 					//check operation is not pending
-					logger.Info("madhu going to delete %v", reqID)
 					if hw.Header().Get("X-Pending") != "true" {
-						logger.Info("going to delete ", r.requestCache)
-						logger.Info("serving count ", r.servingCount)
 						r.decRequest(reqID)
-						logger.Info("madhu completed for", reqID, r.servingCount)
 					}
 
 				}

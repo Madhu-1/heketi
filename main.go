@@ -365,9 +365,8 @@ func main() {
 	}
 	n.Use(&middleware.RequestID{})
 	//Load HTTP request Throttling Middleware
-	fmt.Println("enable throttling with count ", options.HTTPThrottleEnabled, options.MaxHTTPThrottleCount)
 	if options.HTTPThrottleEnabled {
-		fmt.Println("htpt throttling")
+		fmt.Println("Enable HTTP throttling...")
 		maxHTTPThrottleCount := options.MaxHTTPThrottleCount
 		if maxHTTPThrottleCount == 0 {
 			maxHTTPThrottleCount = 30

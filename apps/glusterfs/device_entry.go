@@ -56,11 +56,11 @@ func NewDeviceEntry() *DeviceEntry {
 	return entry
 }
 
-func NewDeviceEntryFromRequest(req *api.DeviceAddRequest) *DeviceEntry {
+func NewDeviceEntryFromRequest(req *api.DeviceAddRequest, reqId string) *DeviceEntry {
 	godbc.Require(req != nil)
 
 	device := NewDeviceEntry()
-	device.Info.Id = utils.GenUUID()
+	device.Info.Id = reqId
 	device.Info.Name = req.Name
 	device.NodeId = req.NodeId
 

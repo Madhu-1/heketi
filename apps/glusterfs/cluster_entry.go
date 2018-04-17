@@ -45,11 +45,11 @@ func NewClusterEntry() *ClusterEntry {
 	return entry
 }
 
-func NewClusterEntryFromRequest(req *api.ClusterCreateRequest) *ClusterEntry {
+func NewClusterEntryFromRequest(req *api.ClusterCreateRequest, reqID string) *ClusterEntry {
 	godbc.Require(req != nil)
 
 	entry := NewClusterEntry()
-	entry.Info.Id = utils.GenUUID()
+	entry.Info.Id = reqID
 	entry.Info.Block = req.Block
 	entry.Info.File = req.File
 

@@ -30,7 +30,8 @@ func GetRequestID(ctx context.Context) string {
 	return reqID
 }
 func AddRequestID(r *http.Request) context.Context {
-	return context.WithValue(r.Context(), requestIDKey, utils.GenUUID())
+	reqID := utils.GenUUID()
+	return context.WithValue(r.Context(), requestIDKey, reqID)
 }
 func (reqID *RequestID) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	switch r.Method {

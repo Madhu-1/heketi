@@ -17,7 +17,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	"fmt"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	MAX_CONCURRENT_REQUESTS = 1000
+	MAX_CONCURRENT_REQUESTS = 32
 	retryCount              = 1000
 )
 
@@ -39,6 +39,7 @@ type Client struct {
 	user       string
 	throttle   chan bool
 	retryCount int
+	httpClient *http.Client
 }
 
 //NewClient Creates a new client to access a Heketi server
@@ -57,7 +58,12 @@ func NewClientWithRetry(host, user, key string, retryCount int) *Client {
 	c.retryCount = retryCount
 	// Maximum concurrent requests
 	c.throttle = make(chan bool, MAX_CONCURRENT_REQUESTS)
-
+	c.httpClient = &http.Client{}
+	// transport := http.Transport{
+	// 	MaxIdleConnsPerHost: 100,
+	// }
+	// c.httpClient.Transport = &transport
+	c.httpClient.CheckRedirect = c.checkRedirect
 	return c
 }
 
@@ -85,7 +91,7 @@ func (c *Client) Hello() error {
 	if err != nil {
 		return err
 	}
-	defer r.Body.Close()
+	//defer r.Body.Close()
 	if r.StatusCode != http.StatusOK {
 		return utils.GetErrorFromResponse(r)
 	}
@@ -100,9 +106,7 @@ func (c *Client) do(req *http.Request) (*http.Response, error) {
 		<-c.throttle
 	}()
 
-	httpClient := &http.Client{}
-	httpClient.CheckRedirect = c.checkRedirect
-	return httpClient.Do(req)
+	return c.httpClient.Do(req)
 }
 
 // This function is called by the http package if it detects that it needs to
@@ -140,13 +144,20 @@ func (c *Client) waitForResponseWithTimer(r *http.Response,
 		if err != nil {
 			return nil, err
 		}
-
+		//defer r.Body.Close()
 		// Check if the request is pending
 		if r.Header.Get("X-Pending") == "true" {
 			if r.StatusCode != http.StatusOK {
 				return nil, utils.GetErrorFromResponse(r)
 			}
 			time.Sleep(waitTime)
+			// if r != nil {
+			// 	//close connection once the request is served
+			// 	//to solve to many file descriptors open issue
+			// 	io.Copy(ioutil.Discard, r.Body)
+			// 	r.Body.Close()
+			// }
+
 		} else {
 			return r, nil
 		}
@@ -194,18 +205,27 @@ func (c *Client) retryOperationDo(req *http.Request, requestBody []byte) (*http.
 	// Send request
 	for i := 0; i < c.retryCount; i++ {
 		req.Body = ioutil.NopCloser(bytes.NewBuffer(requestBody))
+
 		r, err := c.do(req)
 		if err != nil {
-			fmt.Println("the error during the request ", err)
 			return nil, err
 		}
-		defer r.Body.Close()
-		fmt.Println("status code", r.StatusCode)
+		// if r != nil {
+		// 	//close connection once the request is served
+		// 	//to solve to many file descriptors open issue
+		// 	io.Copy(ioutil.Discard, r.Body)
+		// 	r.Body.Close()
+		// }
+		//defer r.Body.Close()
 		switch r.StatusCode {
 		case http.StatusTooManyRequests:
-
-			num := random(10, 30)
-			fmt.Println("not able to satisfy this request retry in", num)
+			if r != nil {
+				//close connection once the request is served
+				//to solve to many file descriptors open issue
+				io.Copy(ioutil.Discard, r.Body)
+				r.Body.Close()
+			}
+			num := random(10, 40)
 			time.Sleep(time.Second * time.Duration(num))
 			continue
 
@@ -214,7 +234,6 @@ func (c *Client) retryOperationDo(req *http.Request, requestBody []byte) (*http.
 
 		}
 	}
-	fmt.Println("Failed to complete requested operation ")
 	return nil, errors.New("Failed to complete requested operation")
 }
 

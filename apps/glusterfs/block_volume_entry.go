@@ -43,8 +43,8 @@ func NewVolumeEntryForBlockHosting(clusters []string) (*VolumeEntry, error) {
 	msg.Durability.Replicate.Replica = 3
 	msg.Block = true
 	msg.GlusterVolumeOptions = []string{"group gluster-block"}
-
-	vol := NewVolumeEntryFromRequest(&msg)
+	reqID := utils.GenUUID()
+	vol := NewVolumeEntryFromRequest(&msg, reqID)
 
 	if !CreateBlockHostingVolumes {
 		return nil, fmt.Errorf("Block Hosting Volume Creation is " +
@@ -66,11 +66,11 @@ func NewBlockVolumeEntry() *BlockVolumeEntry {
 	return entry
 }
 
-func NewBlockVolumeEntryFromRequest(req *api.BlockVolumeCreateRequest) *BlockVolumeEntry {
+func NewBlockVolumeEntryFromRequest(req *api.BlockVolumeCreateRequest, reqID string) *BlockVolumeEntry {
 	godbc.Require(req != nil)
 
 	vol := NewBlockVolumeEntry()
-	vol.Info.Id = utils.GenUUID()
+	vol.Info.Id = reqID
 	vol.Info.Size = req.Size
 	vol.Info.Auth = req.Auth
 

@@ -11,7 +11,6 @@ package glusterfs
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/boltdb/bolt"
@@ -63,8 +62,10 @@ func (a *App) NodeAdd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	//request id from middleware
+	reqID := middleware.GetRequestID(r.Context())
 	// Create a node entry
-	node := NewNodeEntryFromRequest(&msg)
+	node := NewNodeEntryFromRequest(&msg, reqID)
 
 	// Get cluster and peer node hostname
 	var cluster *ClusterEntry
@@ -115,7 +116,6 @@ func (a *App) NodeAdd(w http.ResponseWriter, r *http.Request) {
 	// Add node
 	logger.Info("Adding node %v", node.ManageHostName())
 	reqId := middleware.GetRequestID(r.Context())
-	fmt.Println("request ID ", reqId)
 	a.asyncManager.AsyncHttpRedirectUsing(w, r, reqId, func() (seeother string, e error) {
 
 		// Cleanup in case of failure

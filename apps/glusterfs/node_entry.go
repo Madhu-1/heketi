@@ -38,11 +38,11 @@ func NewNodeEntry() *NodeEntry {
 	return entry
 }
 
-func NewNodeEntryFromRequest(req *api.NodeAddRequest) *NodeEntry {
+func NewNodeEntryFromRequest(req *api.NodeAddRequest, reqID string) *NodeEntry {
 	godbc.Require(req != nil)
 
 	node := NewNodeEntry()
-	node.Info.Id = utils.GenUUID()
+	node.Info.Id = reqID
 	node.Info.ClusterId = req.ClusterId
 	node.Info.Hostnames = req.Hostnames
 	node.Info.Zone = req.Zone

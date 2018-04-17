@@ -41,7 +41,6 @@ func (c *Client) ClusterCreate(request *api.ClusterCreateRequest) (*api.ClusterI
 	if err != nil {
 		return nil, err
 	}
-
 	// Send request
 	r, err := c.do(req)
 	if err != nil {
@@ -76,7 +75,6 @@ func (c *Client) ClusterSetFlags(id string, request *api.ClusterSetFlagsRequest)
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
-
 	// Set token
 	err = c.setToken(req)
 	if err != nil {
@@ -171,7 +169,6 @@ func (c *Client) ClusterDelete(id string) error {
 	if err != nil {
 		return err
 	}
-
 	// Set token
 	err = c.setToken(req)
 	if err != nil {

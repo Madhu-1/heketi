@@ -119,7 +119,6 @@ func (c *Client) NodeDelete(id string) error {
 	if err != nil {
 		return err
 	}
-
 	// Send request
 	r, err := c.retryOperationDo(req, nil)
 	if err != nil {
@@ -163,7 +162,6 @@ func (c *Client) NodeState(id string, request *api.StateRequest) error {
 	if err != nil {
 		return err
 	}
-
 	// Get info
 	r, err := c.retryOperationDo(req, buffer)
 	if err != nil {

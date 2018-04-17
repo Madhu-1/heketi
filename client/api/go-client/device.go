@@ -105,7 +105,6 @@ func (c *Client) DeviceDelete(id string) error {
 	if err != nil {
 		return err
 	}
-
 	// Set token
 	err = c.setToken(req)
 	if err != nil {
@@ -151,7 +150,6 @@ func (c *Client) DeviceState(id string,
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
-
 	// Set token
 	err = c.setToken(req)
 	if err != nil {
@@ -193,7 +191,6 @@ func (c *Client) DeviceResync(id string) error {
 	if err != nil {
 		return err
 	}
-
 	// Send request
 	r, err := c.retryOperationDo(req, nil)
 	if err != nil {
