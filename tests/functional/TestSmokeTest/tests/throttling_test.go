@@ -21,9 +21,8 @@ import (
 
 func TestReqTrottling(t *testing.T) {
 	setupCluster(t, 4, 8)
-
-	t.Run("testReqTrottlingCreateVolume", testReqTrottlingCreateVolume)
 	defer teardownCluster(t)
+	t.Run("testReqTrottlingCreateVolume", testReqTrottlingCreateVolume)
 
 }
 
@@ -38,7 +37,7 @@ func testReqTrottlingCreateVolume(t *testing.T) {
 	volReq.Durability.Type = api.DurabilityReplicate
 	volReq.Durability.Replicate.Replica = 3
 	wg := utils.NewStatusGroup()
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 30; i++ {
 		wg.Add(1)
 		go func(t *testing.T, wg *utils.StatusGroup) {
 			defer wg.Done()
@@ -52,8 +51,8 @@ func testReqTrottlingCreateVolume(t *testing.T) {
 	tests.Assert(t, err == nil, "expected err == nil, got:", err)
 	vl, err = heketi.VolumeList()
 	tests.Assert(t, err == nil, "expected err == nil, got:", err)
-	tests.Assert(t, len(vl.Volumes) == 100,
-		"expected len(vl.Volumes) == 100, got:", len(vl.Volumes))
+	tests.Assert(t, len(vl.Volumes) == 30,
+		"expected len(vl.Volumes) == 30, got:", len(vl.Volumes))
 
 	throttlingteardownVolumes(t)
 }

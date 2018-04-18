@@ -9,19 +9,16 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/heketi/utils"
 	"github.com/urfave/negroni"
 )
 
 var (
 	throttleNow func() time.Time = time.Now
-	logger                       = utils.NewLogger("[heketi]", utils.LEVEL_INFO)
 )
 
 //ReqLimiter struct holds data related to Throttling
@@ -82,6 +79,8 @@ func (r *ReqLimiter) decRecvCount() {
 	r.reqRecvCount--
 
 }
+
+//Function to check ID present in map
 func (r *ReqLimiter) checkReqIDPresent(reqID string) bool {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
@@ -108,7 +107,7 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 		//this is required it will take time to get response for current request
 
 		r.incRecvCount()
-		//by this we can avoid overload by checking maximum and currently received requests counts
+		//avoid overload by checking maximum and currently received requests counts
 		if !r.reachedMaxRequest() && !r.reqReceivedcount() {
 
 			next(hw, hr)
@@ -129,7 +128,6 @@ func (r *ReqLimiter) ServeHTTP(hw http.ResponseWriter, hr *http.Request, next ht
 
 			}
 		} else {
-			logger.LogError(fmt.Sprintf("Rejected the request as max count reached "))
 			http.Error(hw, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
 
 		}

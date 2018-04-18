@@ -39,6 +39,13 @@ func TestReachedMaxRequest(t *testing.T) {
 
 }
 
+func TestCheckIDPresent(t *testing.T) {
+	nt := NewHTTPThrottler(10)
+	nt.requestCache["test"] = time.Now()
+	tests.Assert(t, nt.checkReqIDPresent("test") == true)
+	tests.Assert(t, nt.checkReqIDPresent("") == false)
+
+}
 func TestIsSuccess(t *testing.T) {
 	s := isSuccess(200)
 	tests.Assert(t, s == true)
@@ -99,7 +106,7 @@ func TestServeHTTPTrottleTomanyReq(t *testing.T) {
 			client.Do(r)
 		}
 
-	}(10)
+	}(9)
 
 	r, err := http.NewRequest("DELETE", ts.URL, nil)
 	tests.Assert(t, err == nil)
