@@ -1,4 +1,3 @@
-//
 // Copyright (c) 2015 The heketi Authors
 //
 // This file is licensed to you under your choice of the GNU Lesser
@@ -20,6 +19,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
 	"github.com/heketi/heketi/executors"
+	"github.com/heketi/heketi/executors/glusterd"
 	"github.com/heketi/heketi/executors/kubeexec"
 	"github.com/heketi/heketi/executors/mockexec"
 	"github.com/heketi/heketi/executors/sshexec"
@@ -105,6 +105,7 @@ func NewApp(configIo io.Reader) *App {
 
 	// Setup executor
 	switch app.conf.Executor {
+
 	case "mock":
 		app.xo, err = mockexec.NewMockExecutor()
 		app.executor = app.xo
@@ -112,6 +113,8 @@ func NewApp(configIo io.Reader) *App {
 		app.executor, err = kubeexec.NewKubeExecutor(&app.conf.KubeConfig)
 	case "ssh", "":
 		app.executor, err = sshexec.NewSshExecutor(&app.conf.SshConfig)
+	case "glusterd":
+		app.executor, err = glusterd.InitRESTClient(&app.conf.GlusterdConfig)
 	default:
 		return nil
 	}

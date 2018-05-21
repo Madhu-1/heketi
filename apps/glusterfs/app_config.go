@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"io"
 
+	"github.com/heketi/heketi/executors/glusterd"
 	"github.com/heketi/heketi/executors/kubeexec"
 	"github.com/heketi/heketi/executors/sshexec"
 )
@@ -22,12 +23,13 @@ type RetryLimitConfig struct {
 }
 
 type GlusterFSConfig struct {
-	DBfile     string              `json:"db"`
-	Executor   string              `json:"executor"`
-	Allocator  string              `json:"allocator"`
-	SshConfig  sshexec.SshConfig   `json:"sshexec"`
-	KubeConfig kubeexec.KubeConfig `json:"kubeexec"`
-	Loglevel   string              `json:"loglevel"`
+	DBfile         string                  `json:"db"`
+	Executor       string                  `json:"executor"`
+	Allocator      string                  `json:"allocator"`
+	SshConfig      sshexec.SshConfig       `json:"sshexec"`
+	KubeConfig     kubeexec.KubeConfig     `json:"kubeexec"`
+	GlusterdConfig glusterd.GlusterdConfig `json:"glusterd"`
+	Loglevel       string                  `json:"loglevel"`
 
 	// advanced settings
 	BrickMaxSize    int    `json:"brick_max_size_gb"`
