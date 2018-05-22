@@ -91,6 +91,7 @@ func (g *Gluster) GlusterdCheck(host string) error {
 
 	logger.Info("Check Glusterd service status in node %v", host)
 	g.createClient(host)
+	//TODO change this to health check URL
 	_, err := g.Client.Peers()
 	if err != nil {
 		logger.Err(err)

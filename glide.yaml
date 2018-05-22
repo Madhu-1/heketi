@@ -25,3 +25,6 @@ import:
 - package: github.com/go-ozzo/ozzo-validation
   version: v3.3
 - package:  github.com/gluster/glusterd2
+  subpackages:  
+  - pkg/api
+  - pkg/restclient
