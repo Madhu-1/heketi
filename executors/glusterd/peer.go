@@ -18,10 +18,6 @@ import (
 //TODO need to hanlde glusterd2 port also
 //currently its hardcoded
 
-var (
-	port = ":24008"
-)
-
 // :TODO: Rename this function to NodeInit or something
 func (g *Gluster) PeerProbe(host, newnode string) error {
 
@@ -30,7 +26,7 @@ func (g *Gluster) PeerProbe(host, newnode string) error {
 	g.createClient(host)
 	logger.Info("Probing: %v -> %v", host, newnode)
 	// create the commands
-	_, err := g.Client.PeerAdd(newnode)
+	_, err := g.Client.PeerAdd(newnode + g.Config.PeerPORT)
 	if err != nil {
 		return err
 	}
@@ -69,7 +65,7 @@ func (g *Gluster) PeerDetach(host, detachnode string) error {
 	}
 	for _, peer := range peerlist {
 		for _, addr := range peer.PeerAddresses {
-			if addr == detachnode+port {
+			if addr == detachnode+g.Config.ClientPORT {
 				peerid = peer.ID.String()
 			}
 		}

@@ -13,10 +13,11 @@ type Gluster struct {
 }
 
 type GlusterdConfig struct {
-	SCHEMA   string `json:"url_schema"`
-	PORT     string `json:"port"`
-	CertPath string `json:"cert_path"`
-	Insecure bool   `json:"insecure"`
+	SCHEMA     string `json:"url_schema"`
+	PeerPORT   string `json:"peer_port"`
+	ClientPORT string `json:"client_port"`
+	CertPath   string `json:"cert_path"`
+	Insecure   bool   `json:"insecure"`
 }
 
 var (
@@ -32,6 +33,6 @@ func InitRESTClient(config *GlusterdConfig) (*Gluster, error) {
 
 func (g *Gluster) createClient(host string) {
 	//add default ip if not present
-	url := g.Config.SCHEMA + host + g.Config.PORT
+	url := g.Config.SCHEMA + host + g.Config.PeerPORT
 	g.Client = restclient.New(url, "", "", g.Config.CertPath, g.Config.Insecure)
 }

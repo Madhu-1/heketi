@@ -58,7 +58,8 @@
       "url_schema": "http://",
       "cert_path": "",
       "insecure": false,
-      "port": ":24007"
+      "peer_port": ":24007",
+      "client_port": ":24008"
     },
     "_db_comment": "Database file name",
     "db": "/var/lib/heketi/heketi.db",
