@@ -136,7 +136,7 @@ func (g *Gluster) VolumeCreate(host string,
 	}
 
 	//TODO need to fill all 17 fields
-	err = g.Client.VolumeStart(vol.Name)
+	err = g.Client.VolumeStart(vol.Name, true)
 	if err != nil {
 		g.Client.VolumeDelete(vol.Name)
 		return nil, err
