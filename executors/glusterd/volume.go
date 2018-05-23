@@ -18,7 +18,7 @@ import (
 	"github.com/lpabon/godbc"
 )
 
-func (g *Gluster) prepareBrick(inSet int, brick []executors.BrickInfo) []api.BrickReq {
+func (g *GlusterdExecutor) prepareBrick(inSet int, brick []executors.BrickInfo) []api.BrickReq {
 	var bricks []string
 	peers, err := g.Client.Peers()
 	if err != nil {
@@ -47,7 +47,7 @@ func (g *Gluster) prepareBrick(inSet int, brick []executors.BrickInfo) []api.Bri
 	}
 	return Bricks
 }
-func (g *Gluster) VolumeCreate(host string,
+func (g *GlusterdExecutor) VolumeCreate(host string,
 	volume *executors.VolumeRequest) (*executors.Volume, error) {
 
 	godbc.Require(volume != nil)
@@ -145,7 +145,7 @@ func (g *Gluster) VolumeCreate(host string,
 	return g.formatVolumeResp(api.VolumeInfo(vol)), nil
 }
 
-func (g *Gluster) createVolumeOptionsCommand(volume *executors.VolumeRequest) error {
+func (g *GlusterdExecutor) createVolumeOptionsCommand(volume *executors.VolumeRequest) error {
 
 	// Go through all the Options and create volume set command
 
@@ -166,7 +166,7 @@ func (g *Gluster) createVolumeOptionsCommand(volume *executors.VolumeRequest) er
 
 }
 
-func (g *Gluster) VolumeDestroy(host string, volume string) error {
+func (g *GlusterdExecutor) VolumeDestroy(host string, volume string) error {
 	godbc.Require(host != "")
 	godbc.Require(volume != "")
 	g.createClient(host)
@@ -188,7 +188,7 @@ func (g *Gluster) VolumeDestroy(host string, volume string) error {
 	return nil
 }
 
-func (g *Gluster) VolumeInfo(host string, volume string) (*executors.Volume, error) {
+func (g *GlusterdExecutor) VolumeInfo(host string, volume string) (*executors.Volume, error) {
 
 	godbc.Require(volume != "")
 	godbc.Require(host != "")
@@ -202,7 +202,7 @@ func (g *Gluster) VolumeInfo(host string, volume string) (*executors.Volume, err
 	return g.formatVolumeResp(api.VolumeInfo(volumes[0])), nil
 }
 
-func (g *Gluster) VolumeExpand(host string,
+func (g *GlusterdExecutor) VolumeExpand(host string,
 	volume *executors.VolumeRequest) (*executors.Volume, error) {
 
 	godbc.Require(volume != nil)
@@ -253,7 +253,7 @@ func (g *Gluster) VolumeExpand(host string,
 	return g.formatVolumeResp(api.VolumeInfo(vol)), nil
 }
 
-func (g *Gluster) formatVolumeResp(vol api.VolumeInfo) *executors.Volume {
+func (g *GlusterdExecutor) formatVolumeResp(vol api.VolumeInfo) *executors.Volume {
 	volumeResp := &executors.Volume{}
 	volumeResp.VolumeName = vol.Name
 	volumeResp.ID = vol.ID.String()

@@ -13,13 +13,13 @@ import (
 	"github.com/heketi/heketi/executors"
 )
 
-func (g *Gluster) BrickCreate(host string,
+func (g *GlusterdExecutor) BrickCreate(host string,
 	brick *executors.BrickRequest) (*executors.BrickInfo, error) {
 
 	return nil, executors.NotSupportedError
 }
 
-func (g *Gluster) BrickDestroy(host string,
+func (g *GlusterdExecutor) BrickDestroy(host string,
 	brick *executors.BrickRequest) (bool, error) {
 
 	return false, executors.NotSupportedError

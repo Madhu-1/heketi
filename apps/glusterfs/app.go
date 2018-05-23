@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
@@ -23,6 +24,7 @@ import (
 	"github.com/heketi/heketi/executors/kubeexec"
 	"github.com/heketi/heketi/executors/mockexec"
 	"github.com/heketi/heketi/executors/sshexec"
+	"github.com/heketi/heketi/executors/stack"
 	"github.com/heketi/heketi/pkg/utils"
 	"github.com/heketi/rest"
 )
@@ -104,24 +106,37 @@ func NewApp(configIo io.Reader) *App {
 	app.asyncManager = rest.NewAsyncHttpManager(ASYNC_ROUTE)
 
 	// Setup executor
-	switch app.conf.Executor {
+	executorList := strings.Split(app.conf.Executor, ",")
+	var (
+		executor    executors.Executor
+		appExecutor []executors.Executor
+	)
+	for _, exec := range executorList {
+		exec = strings.TrimSpace(exec)
 
-	case "mock":
-		app.xo, err = mockexec.NewMockExecutor()
-		app.executor = app.xo
-	case "kube", "kubernetes":
-		app.executor, err = kubeexec.NewKubeExecutor(&app.conf.KubeConfig)
-	case "ssh", "":
-		app.executor, err = sshexec.NewSshExecutor(&app.conf.SshConfig)
-	case "glusterd":
-		app.executor, err = glusterd.InitRESTClient(&app.conf.GlusterdConfig)
-	default:
-		return nil
+		switch exec {
+
+		case "mock":
+			app.xo, err = mockexec.NewMockExecutor()
+			app.executor = app.xo
+		case "kube", "kubernetes":
+			executor, err = kubeexec.NewKubeExecutor(&app.conf.KubeConfig)
+			//appExecutor = append(appExecutor, kubeExecutor)
+		case "ssh", "":
+			executor, err = sshexec.NewSshExecutor(&app.conf.SshConfig)
+		case "glusterd":
+			executor, err = glusterd.InitRESTClient(&app.conf.GlusterdConfig)
+		default:
+			return nil
+		}
+		if err != nil {
+			logger.Err(err)
+			return nil
+		}
+		appExecutor = append(appExecutor, executor)
+
 	}
-	if err != nil {
-		logger.Err(err)
-		return nil
-	}
+	app.executor = stack.NewExecutorStack(appExecutor...)
 	logger.Info("Loaded %v executor", app.conf.Executor)
 
 	// Set db is set in the configuration file

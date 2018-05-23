@@ -66,9 +66,9 @@ func (es *ExecutorStack) PeerDetach(exec_host, detachnode string) error {
 	return NotSupportedError
 }
 
-func (es *ExecutorStack) DeviceSetup(host, device, vgid string) (*executors.DeviceInfo, error) {
+func (es *ExecutorStack) DeviceSetup(host, device, vgid string, destroy bool) (*executors.DeviceInfo, error) {
 	for _, e := range es.executors {
-		di, err := e.DeviceSetup(host, device, vgid)
+		di, err := e.DeviceSetup(host, device, vgid, destroy)
 		if err != NotSupportedError {
 			return di, err
 		}
@@ -106,9 +106,49 @@ func (es *ExecutorStack) BrickCreate(host string, brick *executors.BrickRequest)
 	return nil, NotSupportedError
 }
 
-func (es *ExecutorStack) BrickDestroy(host string, brick *executors.BrickRequest) error {
+func (es *ExecutorStack) BrickDestroy(host string, brick *executors.BrickRequest) (bool, error) {
 	for _, e := range es.executors {
-		err := e.BrickDestroy(host, brick)
+		spaceClaimed, err := e.BrickDestroy(host, brick)
+		if err != NotSupportedError {
+			return spaceClaimed, err
+		}
+	}
+	return false, NotSupportedError
+}
+
+// func (es *ExecutorStack) BrickDestroyCheck(host string, brick *executors.BrickRequest) error {
+// 	for _, e := range es.executors {
+// 		err := e.BrickDestroyCheck(host, brick)
+// 		if err != NotSupportedError {
+// 			return err
+// 		}
+// 	}
+// 	return NotSupportedError
+// }
+
+func (es *ExecutorStack) SnapshotCloneBlockVolume(host string, scr *executors.SnapshotCloneRequest) (*executors.BlockVolumeInfo, error) {
+	for _, e := range es.executors {
+		bv, err := e.SnapshotCloneBlockVolume(host, scr)
+		if err != NotSupportedError {
+			return bv, err
+		}
+	}
+	return nil, NotSupportedError
+}
+
+func (es *ExecutorStack) SnapshotCloneVolume(host string, scr *executors.SnapshotCloneRequest) (*executors.Volume, error) {
+	for _, e := range es.executors {
+		sv, err := e.SnapshotCloneVolume(host, scr)
+		if err != NotSupportedError {
+			return sv, err
+		}
+	}
+	return nil, NotSupportedError
+}
+
+func (es *ExecutorStack) SnapshotDestroy(host string, snapshot string) error {
+	for _, e := range es.executors {
+		err := e.SnapshotDestroy(host, snapshot)
 		if err != NotSupportedError {
 			return err
 		}
@@ -116,14 +156,24 @@ func (es *ExecutorStack) BrickDestroy(host string, brick *executors.BrickRequest
 	return NotSupportedError
 }
 
-func (es *ExecutorStack) BrickDestroyCheck(host string, brick *executors.BrickRequest) error {
+func (es *ExecutorStack) VolumeClone(host string, vsr *executors.VolumeCloneRequest) (*executors.Volume, error) {
 	for _, e := range es.executors {
-		err := e.BrickDestroyCheck(host, brick)
+		vc, err := e.VolumeClone(host, vsr)
 		if err != NotSupportedError {
-			return err
+			return vc, err
 		}
 	}
-	return NotSupportedError
+	return nil, NotSupportedError
+}
+
+func (es *ExecutorStack) VolumeSnapshot(host string, vsr *executors.VolumeSnapshotRequest) (*executors.Snapshot, error) {
+	for _, e := range es.executors {
+		ss, err := e.VolumeSnapshot(host, vsr)
+		if err != NotSupportedError {
+			return ss, err
+		}
+	}
+	return nil, NotSupportedError
 }
 
 func (es *ExecutorStack) VolumeCreate(host string, volume *executors.VolumeRequest) (*executors.Volume, error) {

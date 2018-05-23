@@ -19,14 +19,14 @@ import (
 //currently its hardcoded
 
 // :TODO: Rename this function to NodeInit or something
-func (g *Gluster) PeerProbe(host, newnode string) error {
+func (g *GlusterdExecutor) PeerProbe(host, newnode string) error {
 
 	godbc.Require(host != "")
 	godbc.Require(newnode != "")
 	g.createClient(host)
 	logger.Info("Probing: %v -> %v", host, newnode)
 	// create the commands
-	_, err := g.Client.PeerAdd(newnode + g.Config.PeerPORT)
+	_, err := g.Client.PeerAdd(newnode + g.Config.ClientPORT)
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (g *Gluster) PeerProbe(host, newnode string) error {
 	return nil
 }
 
-func (g *Gluster) PeerDetach(host, detachnode string) error {
+func (g *GlusterdExecutor) PeerDetach(host, detachnode string) error {
 	godbc.Require(host != "")
 	godbc.Require(detachnode != "")
 	g.createClient(host)
@@ -82,7 +82,7 @@ func (g *Gluster) PeerDetach(host, detachnode string) error {
 	return nil
 }
 
-func (g *Gluster) GlusterdCheck(host string) error {
+func (g *GlusterdExecutor) GlusterdCheck(host string) error {
 	godbc.Require(host != "")
 
 	logger.Info("Check Glusterd service status in node %v", host)

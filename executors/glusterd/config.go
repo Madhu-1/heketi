@@ -6,7 +6,7 @@ import (
 	"github.com/heketi/heketi/pkg/utils"
 )
 
-type Gluster struct {
+type GlusterdExecutor struct {
 	Client *restclient.Client
 	Config GlusterdConfig
 	cmdexec.CmdExecutor
@@ -24,14 +24,14 @@ var (
 	logger = utils.NewLogger("[glusterd]", utils.LEVEL_DEBUG)
 )
 
-func InitRESTClient(config *GlusterdConfig) (*Gluster, error) {
-	g := Gluster{}
+func InitRESTClient(config *GlusterdConfig) (*GlusterdExecutor, error) {
+	g := GlusterdExecutor{}
 	//TODO add code read certfile and pass it
 	g.Config = *config
 	return &g, nil
 }
 
-func (g *Gluster) createClient(host string) {
+func (g *GlusterdExecutor) createClient(host string) {
 	//add default ip if not present
 	url := g.Config.SCHEMA + host + g.Config.PeerPORT
 	g.Client = restclient.New(url, "", "", g.Config.CertPath, g.Config.Insecure)

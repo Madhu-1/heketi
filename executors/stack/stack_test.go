@@ -297,38 +297,38 @@ func TestBrickDestroy(t *testing.T) {
 	tests.Assert(t, err == NotSupportedError, "expected err == NotSupportedError, got:", err)
 }
 
-func TestBrickDestroyCheck(t *testing.T) {
-	m1, _ := mockexec.NewMockExecutor()
-	m2, _ := mockexec.NewMockExecutor()
-	es := NewExecutorStack(m1, m2)
-	tests.Assert(t, len(es.executors) == 2,
-		"expected len(es.executors) == 2, got:", len(es.executors))
+// func TestBrickDestroyCheck(t *testing.T) {
+// 	m1, _ := mockexec.NewMockExecutor()
+// 	m2, _ := mockexec.NewMockExecutor()
+// 	es := NewExecutorStack(m1, m2)
+// 	tests.Assert(t, len(es.executors) == 2,
+// 		"expected len(es.executors) == 2, got:", len(es.executors))
 
-	br := &executors.BrickRequest{}
+// 	br := &executors.BrickRequest{}
 
-	err := es.BrickDestroyCheck("foo", br)
-	tests.Assert(t, err == nil, "expected err == nil, got:", err)
+// 	err := es.BrickDestroyCheck("foo", br)
+// 	tests.Assert(t, err == nil, "expected err == nil, got:", err)
 
-	m2.MockBrickDestroyCheck = func(host string, brick *executors.BrickRequest) error {
-		return fmt.Errorf("E2")
-	}
+// 	m2.MockBrickDestroyCheck = func(host string, brick *executors.BrickRequest) error {
+// 		return fmt.Errorf("E2")
+// 	}
 
-	err = es.BrickDestroyCheck("foo", br)
-	tests.Assert(t, err == nil, "expected err == nil, got:", err)
+// 	err = es.BrickDestroyCheck("foo", br)
+// 	tests.Assert(t, err == nil, "expected err == nil, got:", err)
 
-	m1.MockBrickDestroyCheck = func(host string, brick *executors.BrickRequest) error {
-		return NotSupportedError
-	}
+// 	m1.MockBrickDestroyCheck = func(host string, brick *executors.BrickRequest) error {
+// 		return NotSupportedError
+// 	}
 
-	err = es.BrickDestroyCheck("foo", br)
-	tests.Assert(t, err.Error() == "E2", "expected err == E2, got:", err)
+// 	err = es.BrickDestroyCheck("foo", br)
+// 	tests.Assert(t, err.Error() == "E2", "expected err == E2, got:", err)
 
-	m2.MockBrickDestroyCheck = func(host string, brick *executors.BrickRequest) error {
-		return NotSupportedError
-	}
-	err = es.BrickDestroyCheck("foo", br)
-	tests.Assert(t, err == NotSupportedError, "expected err == NotSupportedError, got:", err)
-}
+// 	m2.MockBrickDestroyCheck = func(host string, brick *executors.BrickRequest) error {
+// 		return NotSupportedError
+// 	}
+// 	err = es.BrickDestroyCheck("foo", br)
+// 	tests.Assert(t, err == NotSupportedError, "expected err == NotSupportedError, got:", err)
+// }
 
 func TestVolumeCreate(t *testing.T) {
 	m1, _ := mockexec.NewMockExecutor()
