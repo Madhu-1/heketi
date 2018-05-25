@@ -20,12 +20,13 @@ import (
 
 func (g *GlusterdExecutor) prepareBrick(inSet int, brick []executors.BrickInfo) []api.BrickReq {
 	var bricks []string
+	bricks = make([]string, inSet)
 	peers, err := g.Client.Peers()
 	if err != nil {
 		return nil
 	}
 	for i, b := range brick[:inSet] {
-		bricks[i] = fmt.Sprintf("%v:%v ", b.Host, b.Path)
+		bricks[i] = fmt.Sprintf("%v:%v", b.Host, b.Path)
 	}
 
 	var Bricks []api.BrickReq

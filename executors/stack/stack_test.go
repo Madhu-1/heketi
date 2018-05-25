@@ -145,27 +145,27 @@ func TestDeviceSetup(t *testing.T) {
 	tests.Assert(t, len(es.executors) == 2,
 		"expected len(es.executors) == 2, got:", len(es.executors))
 
-	_, err := es.DeviceSetup("foo", "bar", "v")
+	_, err := es.DeviceSetup("foo", "bar", "v", false)
 	tests.Assert(t, err == nil, "expected err == nil, got:", err)
 
-	m2.MockDeviceSetup = func(h, n, v string) (*executors.DeviceInfo, error) {
+	m2.MockDeviceSetup = func(h, n, v string, b bool) (*executors.DeviceInfo, error) {
 		return nil, fmt.Errorf("E2")
 	}
 
-	_, err = es.DeviceSetup("foo", "bar", "v")
+	_, err = es.DeviceSetup("foo", "bar", "v", false)
 	tests.Assert(t, err == nil, "expected err == nil, got:", err)
 
-	m1.MockDeviceSetup = func(h, n, v string) (*executors.DeviceInfo, error) {
+	m1.MockDeviceSetup = func(h, n, v string, b bool) (*executors.DeviceInfo, error) {
 		return nil, NotSupportedError
 	}
 
-	_, err = es.DeviceSetup("foo", "bar", "v")
+	_, err = es.DeviceSetup("foo", "bar", "v", false)
 	tests.Assert(t, err.Error() == "E2", "expected err == E2, got:", err)
 
-	m2.MockDeviceSetup = func(h, n, v string) (*executors.DeviceInfo, error) {
+	m2.MockDeviceSetup = func(h, n, v string, b bool) (*executors.DeviceInfo, error) {
 		return nil, NotSupportedError
 	}
-	_, err = es.DeviceSetup("foo", "bar", "v")
+	_, err = es.DeviceSetup("foo", "bar", "v", false)
 	tests.Assert(t, err == NotSupportedError, "expected err == NotSupportedError, got:", err)
 }
 
@@ -179,21 +179,21 @@ func TestGetDeviceInfo(t *testing.T) {
 	_, err := es.GetDeviceInfo("foo", "bar", "v")
 	tests.Assert(t, err == nil, "expected err == nil, got:", err)
 
-	m2.MockDeviceSetup = func(h, n, v string) (*executors.DeviceInfo, error) {
+	m2.MockDeviceSetup = func(h, n, v string, b bool) (*executors.DeviceInfo, error) {
 		return nil, fmt.Errorf("E2")
 	}
 
 	_, err = es.GetDeviceInfo("foo", "bar", "v")
 	tests.Assert(t, err == nil, "expected err == nil, got:", err)
 
-	m1.MockDeviceSetup = func(h, n, v string) (*executors.DeviceInfo, error) {
+	m1.MockDeviceSetup = func(h, n, v string, b bool) (*executors.DeviceInfo, error) {
 		return nil, NotSupportedError
 	}
 
 	_, err = es.GetDeviceInfo("foo", "bar", "v")
 	tests.Assert(t, err.Error() == "E2", "expected err == E2, got:", err)
 
-	m2.MockDeviceSetup = func(h, n, v string) (*executors.DeviceInfo, error) {
+	m2.MockDeviceSetup = func(h, n, v string, b bool) (*executors.DeviceInfo, error) {
 		return nil, NotSupportedError
 	}
 	_, err = es.GetDeviceInfo("foo", "bar", "v")
@@ -273,27 +273,27 @@ func TestBrickDestroy(t *testing.T) {
 
 	br := &executors.BrickRequest{}
 
-	err := es.BrickDestroy("foo", br)
+	_, err := es.BrickDestroy("foo", br)
 	tests.Assert(t, err == nil, "expected err == nil, got:", err)
 
-	m2.MockBrickDestroy = func(host string, brick *executors.BrickRequest) error {
-		return fmt.Errorf("E2")
+	m2.MockBrickDestroy = func(host string, brick *executors.BrickRequest) (bool, error) {
+		return false, fmt.Errorf("E2")
 	}
 
-	err = es.BrickDestroy("foo", br)
+	_, err = es.BrickDestroy("foo", br)
 	tests.Assert(t, err == nil, "expected err == nil, got:", err)
 
-	m1.MockBrickDestroy = func(host string, brick *executors.BrickRequest) error {
-		return NotSupportedError
+	m1.MockBrickDestroy = func(host string, brick *executors.BrickRequest) (bool, error) {
+		return false, NotSupportedError
 	}
 
-	err = es.BrickDestroy("foo", br)
+	_, err = es.BrickDestroy("foo", br)
 	tests.Assert(t, err.Error() == "E2", "expected err == E2, got:", err)
 
-	m2.MockBrickDestroy = func(host string, brick *executors.BrickRequest) error {
-		return NotSupportedError
+	m2.MockBrickDestroy = func(host string, brick *executors.BrickRequest) (bool, error) {
+		return false, NotSupportedError
 	}
-	err = es.BrickDestroy("foo", br)
+	_, err = es.BrickDestroy("foo", br)
 	tests.Assert(t, err == NotSupportedError, "expected err == NotSupportedError, got:", err)
 }
 

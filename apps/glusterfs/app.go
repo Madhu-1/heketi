@@ -118,10 +118,9 @@ func NewApp(configIo io.Reader) *App {
 
 		case "mock":
 			app.xo, err = mockexec.NewMockExecutor()
-			app.executor = app.xo
+			executor = app.xo
 		case "kube", "kubernetes":
 			executor, err = kubeexec.NewKubeExecutor(&app.conf.KubeConfig)
-			//appExecutor = append(appExecutor, kubeExecutor)
 		case "ssh", "":
 			executor, err = sshexec.NewSshExecutor(&app.conf.SshConfig)
 		case "glusterd":
@@ -136,7 +135,9 @@ func NewApp(configIo io.Reader) *App {
 		appExecutor = append(appExecutor, executor)
 
 	}
+
 	app.executor = stack.NewExecutorStack(appExecutor...)
+
 	logger.Info("Loaded %v executor", app.conf.Executor)
 
 	// Set db is set in the configuration file
