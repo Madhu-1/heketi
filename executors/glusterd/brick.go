@@ -15,10 +15,7 @@ import (
 
 func (g *GlusterdExecutor) BrickCreate(host string,
 	brick *executors.BrickRequest) (*executors.BrickInfo, error) {
-	b := &executors.BrickInfo{
-		Path: brick.Path,
-	}
-	return b, nil
+	return nil, executors.NotSupportedError
 }
 
 func (g *GlusterdExecutor) BrickDestroy(host string,

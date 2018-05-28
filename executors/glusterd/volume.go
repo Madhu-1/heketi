@@ -291,3 +291,17 @@ func (g *GlusterdExecutor) formatVolumeResp(vol api.VolumeInfo) *executors.Volum
 	volumeResp.TypeStr = vol.Type.String()
 	return volumeResp
 }
+
+func (g *GlusterdExecutor) VolumeDestroyCheck(host, volume string) error {
+	godbc.Require(host != "")
+	godbc.Require(volume != "")
+
+	// Determine if the volume is able to be deleted
+	//TODO need to implement this
+	// err := s.checkForSnapshots(host, volume)
+	// if err != nil {
+	// 	return err
+	// }
+
+	return nil
+}

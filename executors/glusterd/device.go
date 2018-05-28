@@ -10,9 +10,6 @@
 package glusterd
 
 import (
-	"encoding/json"
-	"errors"
-
 	"github.com/heketi/heketi/executors"
 )
 
@@ -51,90 +48,92 @@ type deviceInfo struct {
 }
 
 func (g *GlusterdExecutor) DeviceSetup(host, device, vgid string, destroy bool) (*executors.DeviceInfo, error) {
-	g.createClient(host)
-	peerid := ""
-	peerlist, err := g.Client.Peers()
-	if err != nil {
-		logger.Err(err)
-		return nil, err
-	}
-	for _, peer := range peerlist {
-		for _, addr := range peer.PeerAddresses {
-			if addr == host+g.Config.ClientPORT {
-				peerid = peer.ID.String()
-			}
-		}
-	}
-	//TODO implement device delete in failed scenario?
-	dev, err := g.Client.DeviceAdd(peerid, device)
-	if err != nil {
-		logger.Err(err)
-		return nil, err
-	}
-	var devices []deviceInfo
-	var info = new(executors.DeviceInfo)
-	if _, exist := dev.Metadata["_devices"]; exist {
+	// g.createClient(host)
+	// peerid := ""
+	// peerlist, err := g.Client.Peers()
+	// if err != nil {
+	// 	logger.Err(err)
+	// 	return nil, err
+	// }
+	// for _, peer := range peerlist {
+	// 	for _, addr := range peer.PeerAddresses {
+	// 		if addr == host+g.Config.ClientPORT {
+	// 			peerid = peer.ID.String()
+	// 		}
+	// 	}
+	// }
+	// //TODO implement device delete in failed scenario?
+	// dev, err := g.Client.DeviceAdd(peerid, device)
+	// if err != nil {
+	// 	logger.Err(err)
+	// 	return nil, err
+	// }
+	// var devices []deviceInfo
+	// var info = new(executors.DeviceInfo)
+	// if _, exist := dev.Metadata["_devices"]; exist {
 
-		err = json.Unmarshal([]byte(dev.Metadata["_devices"]), &devices)
-		if err != nil {
-			logger.Err(err)
-			return nil, err
-		}
-		for _, d := range devices {
-			if device == d.Name {
-				info.ExtentSize = d.ExtentSize
-				info.Size = d.AvailableSize
-			}
-		}
-	}
-	if info == nil {
-		logger.LogError("failed to fetch device details")
-		return nil, errors.New("failed to fetch device details")
-	}
-	return info, nil
+	// 	err = json.Unmarshal([]byte(dev.Metadata["_devices"]), &devices)
+	// 	if err != nil {
+	// 		logger.Err(err)
+	// 		return nil, err
+	// 	}
+	// 	for _, d := range devices {
+	// 		if device == d.Name {
+	// 			info.ExtentSize = d.ExtentSize
+	// 			info.Size = d.AvailableSize
+	// 		}
+	// 	}
+	// }
+	// if info == nil {
+	// 	logger.LogError("failed to fetch device details")
+	// 	return nil, errors.New("failed to fetch device details")
+	// }
+	// return info, nil
+	return nil, executors.NotSupportedError
 }
 
 func (g *GlusterdExecutor) GetDeviceInfo(host, device, vgid string) (d *executors.DeviceInfo, e error) {
-	//TODO need to replace this function by listing device
-	d = &executors.DeviceInfo{}
+	// //TODO need to replace this function by listing device
+	// d = &executors.DeviceInfo{}
 
-	g.createClient(host)
+	// g.createClient(host)
 
-	peerlist, err := g.Client.Peers()
-	if err != nil {
-		logger.Err(err)
-		return nil, err
-	}
-	var devices []deviceInfo
-	var info = new(executors.DeviceInfo)
-	for _, peer := range peerlist {
-		for _, addr := range peer.PeerAddresses {
-			if addr == host+g.Config.ClientPORT {
-				if _, exist := peer.Metadata["_devices"]; exist {
+	// peerlist, err := g.Client.Peers()
+	// if err != nil {
+	// 	logger.Err(err)
+	// 	return nil, err
+	// }
+	// var devices []deviceInfo
+	// var info = new(executors.DeviceInfo)
+	// for _, peer := range peerlist {
+	// 	for _, addr := range peer.PeerAddresses {
+	// 		if addr == host+g.Config.ClientPORT {
+	// 			if _, exist := peer.Metadata["_devices"]; exist {
 
-					err = json.Unmarshal([]byte(peer.Metadata["_devices"]), &devices)
-					if err != nil {
-						logger.Err(err)
-						return nil, err
-					}
-					for _, d := range devices {
-						if device == d.Name {
-							info.ExtentSize = d.ExtentSize
-							info.Size = d.AvailableSize
-							break
-						}
-					}
-				}
-			}
+	// 				err = json.Unmarshal([]byte(peer.Metadata["_devices"]), &devices)
+	// 				if err != nil {
+	// 					logger.Err(err)
+	// 					return nil, err
+	// 				}
+	// 				for _, d := range devices {
+	// 					if device == d.Name {
+	// 						info.ExtentSize = d.ExtentSize
+	// 						info.Size = d.AvailableSize
+	// 						break
+	// 					}
+	// 				}
+	// 			}
+	// 		}
 
-		}
-	}
+	// 	}
+	// }
 
-	if info == nil {
-		logger.LogError("failed to fetch device details")
-		return nil, errors.New("failed to fetch device details")
-	}
-	return info, nil
+	// if info == nil {
+	// 	logger.LogError("failed to fetch device details")
+	// 	return nil, errors.New("failed to fetch device details")
+	// }
+	// return info, nil
+	return nil, executors.NotSupportedError
 }
 
 func (g *GlusterdExecutor) DeviceTeardown(host, device, vgid string) error {

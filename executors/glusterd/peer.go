@@ -12,6 +12,7 @@ package glusterd
 import (
 	"errors"
 
+	"github.com/gluster/glusterd2/pkg/api"
 	"github.com/lpabon/godbc"
 )
 
@@ -26,7 +27,10 @@ func (g *GlusterdExecutor) PeerProbe(host, newnode string) error {
 	g.createClient(host)
 	logger.Info("Probing: %v -> %v", host, newnode)
 	// create the commands
-	_, err := g.Client.PeerAdd(newnode + g.Config.ClientPORT)
+	peerAddReq := api.PeerAddReq{
+		Addresses: []string{newnode + g.Config.ClientPORT},
+	}
+	_, err := g.Client.PeerAdd(peerAddReq)
 	if err != nil {
 		return err
 	}
@@ -88,7 +92,7 @@ func (g *GlusterdExecutor) GlusterdCheck(host string) error {
 	logger.Info("Check Glusterd service status in node %v", host)
 	g.createClient(host)
 	//TODO change this to health check URL
-	_, err := g.Client.Peers()
+	err := g.Client.Ping()
 	if err != nil {
 		logger.Err(err)
 		return err
